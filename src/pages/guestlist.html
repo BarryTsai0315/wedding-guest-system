@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Guest List - Enchanted Check-In</title>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Newsreader%3Awght%40400%3B500%3B700%3B800&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" onload="this.rel='stylesheet'" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="../config/config.js"></script>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+        :root {
+            --primary-color: #1791cf;
+            --secondary-color: #f0f3f4;
+            --text-color: #111518;
+            --background-color: #f3e9d8;
+            --accent-color: #e0f7fa;
+            --subtle-border: #e0e0e0;
+            --checked-in-bg: #e8f5e9;
+            --unchecked-bg: #ffffff;
+            --checked-in-text: #2e7d32;
+            --unchecked-text: #111518;
+        }
+        body {
+            font-family: 'Newsreader', 'Noto Sans', sans-serif;
+        }
+        .checkbox-custom {
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid var(--subtle-border);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease-in-out;
+            background-color: transparent;
+        }
+        .checkbox-custom:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .checkbox-custom:checked::after {
+            content: "✔";
+            color: white;
+            font-size: 0.8rem;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-primary:hover {
+            background-color: #147ab3;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .magic-wand-icon {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 20px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+        .table-header {
+             color: #ffffff;
+             font-weight: 700;
+             padding: 1rem 1.5rem;
+             text-align: left;
+             font-size: 0.875rem;
+             text-transform: uppercase;
+             letter-spacing: 0.05em;
+        }
+        .table-cell {
+            padding: 1rem 1.5rem;
+            white-space: nowrap;
+        }
+        .checked-in-row {
+            background-color: var(--checked-in-bg);
+            color: var(--checked-in-text);
+        }
+         .checked-in-row .checkbox-custom {
+            border-color: #a5d6a7;
+        }
+        .unchecked-row {
+            background-color: var(--unchecked-bg);
+            color: var(--unchecked-text);
+        }
+        .unchecked-row .checkbox-custom {
+             border-color: #e0e0e0;
+        }
+
+        /* 家庭群組樣式 - 粗框版本 */
+        .family-group-first {
+            border: none;
+            border-radius: 8px 8px 0 0;
+            background: rgba(23, 145, 207, 0.02);
+        }
+
+        .family-group-middle {
+            border: none;
+            background: rgba(23, 145, 207, 0.02);
+        }
+
+        .family-group-last {
+            border: none;
+            border-radius: 0 0 8px 8px;
+            background: rgba(23, 145, 207, 0.02);
+        }
+
+        .family-group-single {
+            border: none;
+            border-radius: 8px;
+            background: rgba(23, 145, 207, 0.02);
+        }
+
+        /* 家庭群組已報到樣式 - 綠底黑字 */
+        .family-group-first.checked-in-row {
+            background-color: #e8f5e8;
+            color: #000000;
+            border-color: #4caf50;
+        }
+
+        .family-group-middle.checked-in-row {
+            background-color: #e8f5e8;
+            color: #000000;
+            border-color: #4caf50;
+        }
+
+        .family-group-last.checked-in-row {
+            background-color: #e8f5e8;
+            color: #000000;
+            border-color: #4caf50;
+        }
+
+        .family-group-single.checked-in-row {
+            background-color: #e8f5e8;
+            color: #000000;
+            border-color: #4caf50;
+        }
+
+        /* 家庭編號標記 */
+        .family-group-first .table-cell:first-child::after,
+        .family-group-single .table-cell:first-child::after {
+            content: "👪";
+            position: absolute;
+            margin-left: 5px;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body class="bg-[var(--background-color)]">
+<div class="relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[var(--subtle-border)] bg-white px-10 py-4 shadow-sm">
+<div class="flex items-center gap-3 text-[var(--text-color)]">
+<span class="material-symbols-outlined text-3xl text-[var(--primary-color)]">auto_stories</span>
+<h1 class="text-xl font-bold leading-tight tracking-[-0.015em]">Enchanted Check-In</h1>
+</div>
+<div class="flex flex-1 justify-end gap-6">
+<nav class="flex items-center gap-8">
+<a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="#">Dashboard</a>
+<a class="text-sm font-medium text-[var(--primary-color)] font-semibold" href="#">Guests</a>
+<a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="#">Tables</a>
+<a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="#">Gifts</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="flex size-10 cursor-pointer items-center justify-center rounded-full bg-[var(--secondary-color)] text-[var(--text-color)] transition-colors hover:bg-gray-200">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-white shadow-md" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAzoLzGX5LzjT3jrnVLh1olWlJv05hkIF-_4qpqB7r3vt_6DxQoFKqlER0FwQC8_ovDJtJbJNrZKOnh1hSVs9rwgpEToPlx8yQDXhBy17Fc1d-_dRUvIy-CidFexPgY3FqRWoR3TCzU1oV7tMiWTH625DSiyPEc8dJhUu3q22m088UVWfE_haSPGhm5-fsXAEZ-bX5n2WAEFT8WFsOtMsZFRTQiR7v199fv3ph7Is0BX9mm05BO0wDLmkKqMKlWATVFEsluPKaILAk");'></div>
+</div>
+</div>
+</header>
+<main class="flex-1 p-6 sm:p-10">
+<div class="mx-auto max-w-7xl">
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-3xl font-bold text-[var(--text-color)] tracking-tight">Guest List</h2>
+<button class="btn-primary" type="button">
+<span class="material-symbols-outlined text-lg">person_add</span> Add New Guest
+            </button>
+</div>
+<div class="bg-white rounded-2xl shadow-lg border border-[var(--subtle-border)] overflow-hidden">
+<!-- 搜尋欄位 -->
+<div class="p-6 border-b border-[var(--subtle-border)]">
+<div class="relative max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">search</span>
+<input type="text" id="search-input" placeholder="搜尋編號或姓名..."
+       class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all">
+<button id="clear-search" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden">
+<span class="material-symbols-outlined text-lg">close</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-sm">
+<thead class="bg-gray-800">
+<tr>
+<th class="table-header">S/N</th>
+<th class="table-header">Guest Name</th>
+<th class="table-header text-center">Family</th>
+<th class="table-header text-center">Collect Gift Money</th>
+<th class="table-header text-center">Has Wedding Cake</th>
+<th class="table-header"></th>
+</tr>
+</thead>
+<tbody id="guest-table-body" class="divide-y divide-[var(--subtle-border)]">
+                            <!-- 載入中的提示 -->
+                            <tr id="loading-row">
+                                <td colspan="6" class="table-cell text-center py-8">
+                                    <span class="material-symbols-outlined animate-spin text-2xl text-[var(--primary-color)]">refresh</span>
+                                    <div class="mt-2 text-gray-500">載入賓客資料中...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+</table>
+</div>
+
+<!-- 分頁資訊和導航 -->
+<div class="px-6 py-4 border-t border-[var(--subtle-border)] bg-gray-50">
+<div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+<!-- 資訊顯示 -->
+<div class="text-sm text-gray-600">
+<span id="pagination-info">顯示第 1-20 筆，共 0 筆賓客</span>
+</div>
+
+<!-- 分頁導航 -->
+<div class="flex items-center space-x-1">
+<!-- 上一頁按鈕 -->
+<button id="prev-page" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+<span class="material-symbols-outlined text-lg">chevron_left</span>
+</button>
+
+<!-- 頁碼按鈕容器 -->
+<div id="page-numbers" class="flex space-x-1">
+<!-- 頁碼按鈕會動態生成 -->
+</div>
+
+<!-- 下一頁按鈕 -->
+<button id="next-page" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+<span class="material-symbols-outlined text-lg">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+</main>
+</div>
+</div>
+
+<script>
+    // Google Apps Script URL 從配置文件載入
+    const GOOGLE_SCRIPT_READ_URL = window.CONFIG?.GOOGLE_SCRIPT_URL || (() => { alert('請先設定 config.js 配置文件！'); return ''; })();
+
+    let guestData = []; // 全部賓客資料
+    let filteredData = []; // 搜尋過濾後的資料
+    let currentSearchTerm = ''; // 目前的搜尋關鍵字
+    let lastDataUpdateTime = 0; // 最後資料更新時間
+
+    // 🗄️ 持久化緩存配置
+    const CACHE_KEY = 'wedding_guest_data';
+    const CACHE_TIME_KEY = 'wedding_guest_data_time';
+    const CACHE_DURATION = 5 * 60 * 1000; // 5分鐘緩存
+
+    // 分頁變數
+    const itemsPerPage = 20;
+    let currentPage = 1;
+
+    // 🗄️ 持久化緩存管理
+    function saveCacheToStorage() {
+        try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(guestData));
+            localStorage.setItem(CACHE_TIME_KEY, lastDataUpdateTime.toString());
+        } catch (error) {
+            console.warn('⚠️ localStorage 保存失敗:', error);
+        }
+    }
+
+    function loadCacheFromStorage() {
+        try {
+            const cachedData = localStorage.getItem(CACHE_KEY);
+            const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
+
+            if (cachedData && cachedTime) {
+                const cacheAge = Date.now() - parseInt(cachedTime);
+                if (cacheAge < CACHE_DURATION) {
+                    guestData = JSON.parse(cachedData);
+                    lastDataUpdateTime = parseInt(cachedTime);
+                    return true;
+                } else {
+                    clearCacheFromStorage();
+                }
+            }
+        } catch (error) {
+            console.warn('⚠️ localStorage 讀取失敗:', error);
+            clearCacheFromStorage();
+        }
+        return false;
+    }
+
+    function clearCacheFromStorage() {
+        try {
+            localStorage.removeItem(CACHE_KEY);
+            localStorage.removeItem(CACHE_TIME_KEY);
+        } catch (error) {
+            console.warn('⚠️ localStorage 清除失敗:', error);
+        }
+    }
+
+    // 🔄 更新本地緩存
+    function updateCacheData(newData) {
+        guestData = newData;
+        lastDataUpdateTime = Date.now();
+        saveCacheToStorage();
+    }
+
+    // 🔍 緩存狀態檢查（開發者工具用）
+    window.checkCacheStatus = function() {
+        console.log('=== 婚禮系統緩存狀態 ===');
+        console.log('記憶體緩存筆數:', guestData.length);
+        console.log('最後更新時間:', lastDataUpdateTime ? new Date(lastDataUpdateTime) : '無');
+        console.log('緩存年齡:', lastDataUpdateTime ? `${Math.round((Date.now() - lastDataUpdateTime) / 1000)}秒` : '無');
+        console.log('記憶體緩存有效:', Date.now() - lastDataUpdateTime < CACHE_DURATION);
+
+        const storageData = localStorage.getItem(CACHE_KEY);
+        const storageTime = localStorage.getItem(CACHE_TIME_KEY);
+        console.log('localStorage 有資料:', !!storageData);
+        console.log('localStorage 時間:', storageTime ? new Date(parseInt(storageTime)) : '無');
+
+        // 檢查 localStorage 中的資料筆數
+        if (storageData) {
+            try {
+                const parsed = JSON.parse(storageData);
+                console.log('localStorage 資料筆數:', parsed.length);
+            } catch (e) {
+                console.log('localStorage 資料解析失敗');
+            }
+        }
+
+        if (guestData.length > 0) {
+            console.log('前3筆資料:', guestData.slice(0, 3));
+            console.log('最後3筆資料:', guestData.slice(-3));
+
+            // 檢查是否有不同頁面的資料
+            const serialNumbers = guestData.map(g => g.serialNumber).sort((a, b) => a - b);
+            console.log('序號範圍:', `${serialNumbers[0]} - ${serialNumbers[serialNumbers.length - 1]}`);
+            console.log('是否連續:', serialNumbers.length === (serialNumbers[serialNumbers.length - 1] - serialNumbers[0] + 1));
+        }
+
+        // 返回狀態摘要
+        return {
+            memoryCache: guestData.length,
+            memoryCacheValid: Date.now() - lastDataUpdateTime < CACHE_DURATION,
+            localStorageHasData: !!storageData,
+            localStorageCount: storageData ? JSON.parse(storageData).length : 0,
+            cacheAge: Math.round((Date.now() - lastDataUpdateTime) / 1000)
+        };
+    };
+
+    // 🚀 性能優化：智能載入資料
+    function smartLoadGuestData(forceReload = false) {
+        // 優先嘗試從 localStorage 恢復緩存
+        if (!forceReload && guestData.length === 0) {
+            loadCacheFromStorage();
+        }
+
+        // 檢查記憶體緩存是否有效
+        if (!forceReload && guestData.length > 0 &&
+            Date.now() - lastDataUpdateTime < CACHE_DURATION) {
+            filteredData = [...guestData];
+            renderGuestTable();
+            return;
+        }
+
+        loadGuestData();
+    }
+
+    // 🔄 本地更新賓客資料（避免重新請求）
+    function updateLocalGuestData(checkInData) {
+        const { serialNumber, guestName, familyId, collectMoney, giftAmount, hasCake, cakeGiven } = checkInData;
+
+        // 更新報到操作者
+        const guestIndex = guestData.findIndex(guest =>
+            guest.serialNumber === parseInt(serialNumber)
+        );
+
+        if (guestIndex === -1) {
+            loadGuestData();
+            return;
+        }
+
+        const now = new Date().toISOString();
+
+        // 🎯 好品味：數據更新統一化
+        const checkInUpdate = {
+            checkedIn: true,
+            timestamp: now
+        };
+
+        const giftUpdate = {
+            collectMoney: Boolean(collectMoney),
+            giftAmount: Number(giftAmount) || 0,
+            hasCake: Boolean(hasCake),
+            cakeGiven: Boolean(cakeGiven)
+        };
+
+        // 主要報到者獲得完整更新
+        guestData[guestIndex] = { ...guestData[guestIndex], ...checkInUpdate, ...giftUpdate };
+
+        // 家庭成員只獲得報到狀態更新，無特殊情況判斷
+        const updatedCount = familyId ? 
+            updateFamilyMembers(familyId, guestIndex, checkInUpdate) + 1 : 1;
+
+        // 更新篩選資料和顯示
+        filteredData = [...guestData];
+        if (currentSearchTerm) {
+            filterGuests(currentSearchTerm);
+        } else {
+            renderGuestTable();
+        }
+
+
+        // 保存更新後的資料到 localStorage
+        saveCacheToStorage();
+
+        updatePaginationDisplay()
+    }
+
+    // 🎯 好品味：純函數，職責單一
+    function updateFamilyMembers(familyId, skipIndex, updateData) {
+        let count = 0;
+        guestData.forEach((guest, index) => {
+            if (guest.familyId === familyId && index !== skipIndex) {
+                guestData[index] = { ...guestData[index], ...updateData };
+                count++;
+            }
+        });
+        return count;
+    }
+
+    // 載入全部賓客資料 - 使用 JSONP
+    function loadGuestData() {
+        // 清理之前的 JSONP script 標籤
+        const oldScript = document.querySelector('script[data-jsonp="guestlist"]');
+        if (oldScript) {
+            oldScript.remove();
+        }
+
+        // 設定全域回調函數
+        window.handleGuestData = function(response) {
+
+            // 檢查是否有錯誤或者是分頁資料格式
+            if (response.error) {
+                console.error('伺服器錯誤:', response.error);
+                document.getElementById('guest-table-body').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="table-cell text-center py-8">
+                            <span class="material-symbols-outlined text-2xl text-red-500">error</span>
+                            <div class="mt-2 text-red-500">載入資料失敗：${response.message || '未知錯誤'}</div>
+                            <button onclick="loadGuestData()" class="btn-primary mt-2">
+                                <span class="material-symbols-outlined">refresh</span> 重新載入
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // 判斷是分頁格式還是原本的陣列格式
+            if (response.data && Array.isArray(response.data)) {
+                // 新的分頁格式，但我們取所有頁面的資料
+                guestData = response.data;
+            } else if (Array.isArray(response)) {
+                // 原本的陣列格式
+                guestData = response;
+            } else {
+                console.error('未知的資料格式:', response);
+                guestData = [];
+            }
+
+
+            // 🎯 簡單有效：如果有分頁就自動載入全部
+            if (response.pagination && response.pagination.hasNextPage) {
+                // 直接載入下一頁並累積到現有資料
+                loadMorePages(response.pagination.currentPage + 1, guestData);
+                return; // 等待所有頁面載入完成再處理 UI
+            } else {
+                // 只有一頁，直接完成 UI 更新
+                finishDataLoadingAndUpdateUI(guestData);
+            }
+        };
+
+        // 創建 JSONP script 標籤，不要分頁參數，取得全部資料
+        const script = document.createElement('script');
+        script.setAttribute('data-jsonp', 'guestlist');
+
+        // 🚀 漸進式載入：先嘗試獲取更多資料，實際收到多少就緩存多少
+        const params = new URLSearchParams({
+            callback: 'handleGuestData',
+            limit: 999999, // 嘗試獲取全部，實際能拿多少就拿多少
+            page: 1,
+            _t: Date.now()
+        });
+
+        script.src = `${GOOGLE_SCRIPT_READ_URL}?${params.toString()}`;
+
+        // 錯誤處理
+        script.onerror = function() {
+            console.error('JSONP 請求失敗');
+            document.getElementById('guest-table-body').innerHTML = `
+                <tr>
+                    <td colspan="5" class="table-cell text-center py-8">
+                        <span class="material-symbols-outlined text-2xl text-red-500">error</span>
+                        <div class="mt-2 text-red-500">網路連接失敗</div>
+                        <button onclick="loadGuestData()" class="btn-primary mt-2">
+                            <span class="material-symbols-outlined">refresh</span> 重新載入
+                        </button>
+                    </td>
+                </tr>
+            `;
+        };
+
+        // 添加到頁面
+        document.head.appendChild(script);
+
+    }
+
+    // 統一的 UI 更新函數
+    function finishDataLoadingAndUpdateUI(finalData) {
+        guestData = finalData;
+
+        // 初始化篩選資料
+        filteredData = [...guestData];
+
+        // 設置資料更新時間並保存至 localStorage
+        updateCacheData(guestData);
+
+
+        // 如果有搜尋關鍵字，進行篩選
+        if (currentSearchTerm) {
+            filterGuests(currentSearchTerm);
+        } else {
+            // 更新分頁顯示
+            updatePaginationDisplay();
+            renderGuestTable();
+        }
+    }
+
+    // 載入剩餘頁面的資料
+    function loadMorePages(pageNumber, accumulatedData) {
+        // 設定這個頁面的回調函數
+        window[`handleGuestDataPage${pageNumber}`] = function(response) {
+
+            let currentPageData = [];
+            if (response.data && Array.isArray(response.data)) {
+                currentPageData = response.data;
+            } else if (Array.isArray(response)) {
+                currentPageData = response;
+            }
+
+            // 累積資料
+            const totalData = [...accumulatedData, ...currentPageData];
+
+            // 檢查是否還有下一頁
+            if (response.pagination && response.pagination.hasNextPage) {
+                // 繼續載入下一頁
+                loadMorePages(pageNumber + 1, totalData);
+            } else {
+                // 所有頁面載入完成，統一更新 UI
+                finishDataLoadingAndUpdateUI(totalData);
+            }
+        };
+
+        // 創建新的 JSONP script
+        const script = document.createElement('script');
+        script.setAttribute('data-jsonp', `guestlist-page-${pageNumber}`);
+
+        const params = new URLSearchParams({
+            callback: `handleGuestDataPage${pageNumber}`,
+            page: pageNumber,
+            _t: Date.now()
+        });
+
+        script.src = `${GOOGLE_SCRIPT_READ_URL}?${params.toString()}`;
+
+        script.onerror = function() {
+            console.error(`第 ${pageNumber} 頁載入失敗，使用已載入的 ${accumulatedData.length} 筆資料`);
+            // 載入失敗，使用已有資料，統一更新 UI
+            finishDataLoadingAndUpdateUI(accumulatedData);
+        };
+
+        document.head.appendChild(script);
+    }
+
+    // 更新分頁顯示（基於本地資料）
+    function updatePaginationDisplay() {
+        updatePaginationInfo();
+        updatePaginationButtons();
+    }
+
+    // 更新分頁資訊顯示
+    function updatePaginationInfo() {
+        const totalRecords = filteredData.length;
+        const start = totalRecords === 0 ? 0 : ((currentPage - 1) * itemsPerPage) + 1;
+        const end = Math.min(currentPage * itemsPerPage, totalRecords);
+
+        document.getElementById('pagination-info').textContent =
+            `顯示第 ${start}-${end} 筆，共 ${totalRecords} 筆賓客`;
+    }
+
+    // 更新分頁按鈕
+    function updatePaginationButtons() {
+        const prevBtn = document.getElementById('prev-page');
+        const nextBtn = document.getElementById('next-page');
+        const pageNumbers = document.getElementById('page-numbers');
+
+        const totalRecords = filteredData.length;
+        const totalPages = Math.ceil(totalRecords / itemsPerPage);
+        const hasPrevPage = currentPage > 1;
+        const hasNextPage = currentPage < totalPages;
+
+        // 上一頁/下一頁按鈕狀態
+        prevBtn.disabled = !hasPrevPage;
+        nextBtn.disabled = !hasNextPage;
+
+        // 生成頁碼按鈕
+        pageNumbers.innerHTML = '';
+
+        // 計算顯示的頁碼範圍
+        const maxButtons = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
+        let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+        // 調整起始頁面
+        if (endPage - startPage + 1 < maxButtons) {
+            startPage = Math.max(1, endPage - maxButtons + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            const button = document.createElement('button');
+            button.textContent = i;
+            button.className = `px-3 py-2 text-sm font-medium border ${
+                i === currentPage
+                    ? 'bg-[var(--primary-color)] text-white border-[var(--primary-color)]'
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            }`;
+            button.onclick = () => goToPage(i);
+            pageNumbers.appendChild(button);
+        }
+    }
+
+    // 跳轉到指定頁面（前端分頁）
+    function goToPage(page) {
+        const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+        if (page >= 1 && page <= totalPages) {
+            currentPage = page;
+            updatePaginationDisplay();
+            renderGuestTable();
+        }
+    }
+
+    // 渲染賓客表格（支援家庭群組橢圓形顯示）
+    function renderGuestTable() {
+        const tbody = document.getElementById('guest-table-body');
+
+        if (filteredData.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="table-cell text-center py-8">
+                        <span class="material-symbols-outlined text-2xl text-gray-400">person_off</span>
+                        <div class="mt-2 text-gray-500">
+                            ${currentSearchTerm ? '沒有符合搜尋條件的賓客' : '尚無賓客資料'}
+                        </div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        // 🎯 基於完整快取資料的前端分頁
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const currentPageData = filteredData.slice(startIndex, endIndex);
+
+
+        // 按家庭群組整理資料
+        const groupedData = groupGuestsByFamily(currentPageData);
+
+        tbody.innerHTML = groupedData.map(guest => {
+            const isCheckedIn = guest.checkedIn;
+            const rowClass = isCheckedIn ? 'checked-in-row' : 'unchecked-row';
+            const buttonClass = isCheckedIn ? 'btn-primary bg-green-200 text-green-800 hover:bg-green-300' : 'btn-primary';
+            const buttonText = isCheckedIn ? '<span class="magic-wand-icon">edit</span> 已報到' : '<span class="magic-wand-icon">login</span> 未報到';
+            const buttonAction = isCheckedIn ? `viewGuestDetails('${guest.serialNumber}')` : `goToCheckin('${guest.serialNumber}', '${guest.guestName}', ${guest.collectMoney}, ${guest.hasCake})`;
+
+            // 添加家庭群組樣式
+            const familyGroupClass = guest.familyGroupClass || '';
+            const familyDisplay = guest.familyId ? `<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">${guest.familyId}</span>` : '-';
+
+            return `
+                <tr class="transition-colors ${rowClass} ${familyGroupClass}">
+                    <td class="table-cell">${guest.serialNumber}</td>
+                    <td class="table-cell font-medium">${guest.guestName}</td>
+                    <td class="table-cell text-center">${familyDisplay}</td>
+                    <td class="table-cell text-center">
+                        <input ${guest.collectMoney ? 'checked' : ''}
+                               class="checkbox-custom ${isCheckedIn ? 'border-green-300' : ''}"
+                               type="checkbox" disabled/>
+                    </td>
+                    <td class="table-cell text-center">
+                        <input ${guest.hasCake ? 'checked' : ''}
+                               class="checkbox-custom ${isCheckedIn ? 'border-green-300' : ''}"
+                               type="checkbox" disabled/>
+                    </td>
+                    <td class="table-cell text-right">
+                        <button class="${buttonClass}" onclick="${buttonAction}">
+                            ${buttonText}
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // 🎯 好品味重寫：真正消除特殊情況
+    function groupGuestsByFamily(guests) {
+        const result = [];
+        const familyMap = new Map();
+        
+        // 分離家庭成員和個人賓客
+        guests.forEach(guest => {
+            if (guest.familyId) {
+                if (!familyMap.has(guest.familyId)) {
+                    familyMap.set(guest.familyId, []);
+                }
+                familyMap.get(guest.familyId).push(guest);
+            } else {
+                // 個人賓客不需要任何家庭標記
+                guest.familyGroupClass = '';
+                result.push(guest);
+            }
+        });
+
+        // 只處理真正的家庭群組
+        familyMap.forEach(family => {
+            family.forEach((guest, index) => {
+                guest.familyGroupClass = calculateFamilyPosition(family.length, index);
+                result.push(guest);
+            });
+        });
+
+        return result;
+    }
+
+    // 純函數：只處理真實的家庭位置
+    function calculateFamilyPosition(familySize, index) {
+        if (familySize === 1) return 'family-group-single';
+        if (index === 0) return 'family-group-first';
+        if (index === familySize - 1) return 'family-group-last';
+        return 'family-group-middle';
+    }
+
+    // 查看賓客詳細資訊
+    function viewGuestDetails(serialNumber) {
+        const guest = guestData.find(g => g.serialNumber === parseInt(serialNumber));
+        if (guest) {
+            const details = `
+賓客編號: ${guest.serialNumber}
+姓名: ${guest.guestName}
+收禮金: ${guest.collectMoney ? '是' : '否'}
+${guest.collectMoney && guest.giftAmount ? `禮金金額: ${guest.giftAmount}` : ''}
+有喜餅: ${guest.hasCake ? '是' : '否'}
+發放喜餅: ${guest.cakeGiven ? '是' : '否'}
+報到時間: ${guest.timestamp ? new Date(guest.timestamp).toLocaleString('zh-TW') : '尚未報到'}
+            `;
+            alert(details);
+        }
+    }
+
+    // 跳轉到報到畫面
+    function goToCheckin(serialNumber, guestName, collectMoney, hasCake) {
+        // 從 guestData 中找到該賓客的完整資訊
+        const guestInfo = guestData.find(guest => guest.serialNumber === parseInt(serialNumber));
+
+        // 除錯確認：類型問題已修正
+        console.log('✅ 類型修正後查詢結果:', {
+            originalSerialNumber: serialNumber,
+            serialNumberType: typeof serialNumber,
+            parsedSerialNumber: parseInt(serialNumber),
+            foundGuestInfo: !!guestInfo,
+            guestInfoFamilyId: guestInfo ? guestInfo.familyId : '未找到賓客'
+        });
+
+        // 基本參數
+        const params = new URLSearchParams({
+            sn: serialNumber,
+            name: encodeURIComponent(guestName),
+            collectMoney: collectMoney,
+            hasCake: hasCake
+        });
+
+        // 如果有家庭編號，加入家庭成員資訊
+        if (guestInfo && guestInfo.familyId) {
+            // 找到同家庭的所有成員
+            const familyMembers = guestData.filter(guest => guest.familyId === guestInfo.familyId);
+
+
+            if (familyMembers.length > 1) {
+                // 將家庭成員資訊編碼為 JSON 字串
+                const familyData = familyMembers.map(member => ({
+                    memberName: member.guestName,
+                    isCheckedIn: member.checkedIn
+                }));
+
+                params.set('familyId', guestInfo.familyId);
+                params.set('familyMembers', encodeURIComponent(JSON.stringify(familyData)));
+
+            } else {
+            }
+        } else {
+        }
+
+        // 跳轉到報到畫面
+        window.location.href = `checkin.html?${params.toString()}`;
+    }
+
+    // 🔄 智能刷新資料
+    function refreshData(forceReload = false) {
+        if (forceReload) {
+            document.getElementById('guest-table-body').innerHTML = `
+                <tr id="loading-row">
+                    <td colspan="5" class="table-cell text-center py-8">
+                        <span class="material-symbols-outlined animate-spin text-2xl text-[var(--primary-color)]">refresh</span>
+                        <div class="mt-2 text-gray-500">重新載入資料中...</div>
+                    </td>
+                </tr>
+            `;
+            loadGuestData();
+        } else {
+            // 使用智能載入
+            smartLoadGuestData();
+        }
+    }
+
+    // 搜索功能（本地搜尋 + 前端分頁）
+    function filterGuests(searchTerm) {
+        currentSearchTerm = searchTerm.trim();
+
+        if (currentSearchTerm === '') {
+            // 沒有搜尋條件，顯示全部資料
+            filteredData = [...guestData];
+        } else {
+            // 有搜尋條件，過濾資料
+            const searchLower = currentSearchTerm.toLowerCase();
+            filteredData = guestData.filter(guest => {
+                const matchesSerial = guest.serialNumber.toString().toLowerCase().includes(searchLower);
+                const matchesName = guest.guestName.toString().toLowerCase().includes(searchLower);
+                return matchesSerial || matchesName;
+            });
+        }
+
+        // 重置到第一頁
+        currentPage = 1;
+
+        // 更新顯示
+        updatePaginationDisplay();
+        renderGuestTable();
+
+        // 顯示/隱藏清除按鈕
+        const clearButton = document.getElementById('clear-search');
+        if (currentSearchTerm) {
+            clearButton.classList.remove('hidden');
+        } else {
+            clearButton.classList.add('hidden');
+        }
+    }
+
+    // 清除搜索
+    function clearSearch() {
+        const searchInput = document.getElementById('search-input');
+        searchInput.value = '';
+        filterGuests('');
+    }
+
+    // 添加刷新按鈕功能
+    document.addEventListener('DOMContentLoaded', function() {
+        // 搜索功能事件綁定
+        const searchInput = document.getElementById('search-input');
+        const clearButton = document.getElementById('clear-search');
+
+        // 即時搜索
+        searchInput.addEventListener('input', function(e) {
+            filterGuests(e.target.value);
+        });
+
+        // 清除搜索
+        clearButton.addEventListener('click', clearSearch);
+
+        // Enter 鍵搜索
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                filterGuests(e.target.value);
+            }
+        });
+
+        // 添加刷新按鈕到標題旁邊
+        const headerDiv = document.querySelector('main .flex.items-center.justify-between');
+        const refreshButton = document.createElement('button');
+        refreshButton.className = 'btn-primary ml-4';
+        refreshButton.innerHTML = '<span class="material-symbols-outlined">refresh</span> 刷新資料';
+        refreshButton.onclick = () => refreshData(true); // 強制重新載入
+
+        const addGuestButton = headerDiv.querySelector('button');
+        addGuestButton.parentNode.insertBefore(refreshButton, addGuestButton);
+
+        // 分頁按鈕事件
+        document.getElementById('prev-page').addEventListener('click', function() {
+            if (currentPage > 1) {
+                goToPage(currentPage - 1);
+            }
+        });
+
+        document.getElementById('next-page').addEventListener('click', function() {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                goToPage(currentPage + 1);
+            }
+        });
+
+        // 🚀 智能載入 - 檢查是否從報到畫面回跳
+        const urlParams = new URLSearchParams(window.location.search);
+        const isLocalUpdate = urlParams.get('localUpdate') === 'true';
+
+        if (isLocalUpdate) {
+            // 從 URL 參數解析報到資訊
+            const checkInData = {
+                serialNumber: urlParams.get('sn'),
+                guestName: decodeURIComponent(urlParams.get('name') || ''),
+                collectMoney: urlParams.get('collectMoney') === 'true',
+                giftAmount: parseInt(urlParams.get('giftAmount') || '0'),
+                hasCake: urlParams.get('hasCake') === 'true',
+                cakeGiven: urlParams.get('cakeGiven') === 'true'
+            };
+
+
+            // ✅ 檢查是否有現有緩存資料（包括 localStorage）
+            if (guestData.length === 0) {
+                loadCacheFromStorage(); // 嘗試從 localStorage 恢復
+            }
+
+            if (guestData.length > 0) {
+
+                // 直接使用緩存進行本地更新
+                const guest = guestData.find(g => g.serialNumber === parseInt(checkInData.serialNumber));
+                if (guest) {
+                    checkInData.familyId = guest.familyId;
+                    updateLocalGuestData(checkInData);
+                } else {
+                    loadGuestData();
+                }
+            } else {
+
+                // 載入資料後執行本地更新
+                const originalCallback = window.handleGuestData;
+
+                window.handleGuestData = function(response) {
+                    // 執行原始的資料載入邏輯
+                    originalCallback(response);
+
+                    // 如果資料載入成功，執行本地更新
+                    if (guestData.length > 0) {
+                        // 找到家庭ID來正確更新
+                        const guest = guestData.find(g => g.serialNumber === parseInt(checkInData.serialNumber));
+                        if (guest) {
+                            checkInData.familyId = guest.familyId;
+                            updateLocalGuestData(checkInData);
+                        }
+                    }
+
+                    // 恢復原始回調
+                    window.handleGuestData = originalCallback;
+                };
+
+                loadGuestData();
+            }
+
+            // 清理 URL 參數
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } else if (urlParams.has('refresh')) {
+            // 舊版本相容性：強制刷新
+            loadGuestData();
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } else {
+            // 正常智能載入
+            smartLoadGuestData();
+        }
+
+        // 🕐 降低自動刷新頻率：每5分鐘智能刷新
+        setInterval(() => smartLoadGuestData(true), 5 * 60 * 1000);
+    });
+</script>
+
+</body></html>

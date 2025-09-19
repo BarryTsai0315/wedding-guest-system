@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Stitch Design</title>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Newsreader%3Awght%40400%3B500%3B700%3B800&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" onload="this.rel='stylesheet'" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+<script src="../config/config.js"></script>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+        :root {
+            --primary-color: #1791cf;
+            --secondary-color: #f0f3f4;
+            --text-color: #111518;
+            --background-color: #f3e9d8;
+            --accent-color: #e0f7fa;
+            --subtle-border: #e0e0e0;
+        }
+        body {
+            font-family: 'Newsreader', 'Noto Sans', sans-serif;
+        }
+        .form-input {
+            background-color: white;
+            border: 1px solid var(--subtle-border);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            transition: all 0.2s ease-in-out;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(23, 145, 207, 0.1);
+        }
+        .form-input:disabled {
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+        }
+        .checkbox-custom {
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid var(--subtle-border);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease-in-out;
+        }
+        .checkbox-custom:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .checkbox-custom:checked::after {
+            content: "✔";
+            color: white;
+            font-size: 0.8rem;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .btn-primary:hover {
+            background-color: #147ab3;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .magic-wand-icon {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+</head>
+<body class="bg-[var(--background-color)]">
+<div class="relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[var(--subtle-border)] bg-white px-10 py-4 shadow-sm">
+<div class="flex items-center gap-3 text-[var(--text-color)]">
+<span class="material-symbols-outlined text-3xl text-[var(--primary-color)]">auto_stories</span>
+<h1 class="text-xl font-bold leading-tight tracking-[-0.015em]">Enchanted Check-In</h1>
+</div>
+<div class="flex flex-1 justify-end gap-6">
+<nav class="flex items-center gap-8">
+<a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="#">Dashboard</a>
+<a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="#">Guests</a>
+<a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="#">Tables</a>
+<a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="#">Gifts</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="flex size-10 cursor-pointer items-center justify-center rounded-full bg-[var(--secondary-color)] text-[var(--text-color)] transition-colors hover:bg-gray-200">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-white shadow-md" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAzoLzGX5LzjT3jrnVLh1olWlJv05hkIF-_4qpqB7r3vt_6DxQoFKqlER0FwQC8_ovDJtJbJNrZKOnh1hSVs9rwgpEToPlx8yQDXhBy17Fc1d-_dRUvIy-CidFexPgY3FqRWoR3TCzU1oV7tMiWTH625DSiyPEc8dJhUu3q22m088UVWfE_haSPGhm5-fsXAEZ-bX5n2WAEFT8WFsOtMsZFRTQiR7v199fv3ph7Is0BX9mm05BO0wDLmkKqMKlWATVFEsluPKaILAk");'></div>
+</div>
+</div>
+</header>
+<main class="flex flex-1 justify-center py-12">
+<div class="w-full max-w-2xl px-4">
+<div class="bg-white p-8 sm:p-12 rounded-2xl shadow-lg border border-[var(--subtle-border)]">
+<div class="text-center mb-10 relative">
+<button onclick="goBack()" class="absolute left-0 top-0 flex items-center gap-2 text-sm font-medium text-[var(--primary-color)] hover:text-blue-700 transition-colors">
+<span class="material-symbols-outlined text-lg">arrow_back</span>
+回到賓客清單
+</button>
+<h2 class="text-3xl font-bold text-[var(--text-color)] tracking-tight">Guest Check-In</h2>
+<p class="mt-2 text-base text-gray-500">Welcome to a magical celebration!</p>
+</div>
+<form class="space-y-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div>
+<label class="block text-sm font-medium leading-6 text-[var(--text-color)]" for="serial-number">System Serial Number</label>
+<div class="mt-2">
+<input class="form-input w-full" id="serial-number" name="serial-number" placeholder="e.g., 934" type="text"/>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium leading-6 text-[var(--text-color)]" for="guest-name">Guest Name</label>
+<div class="mt-2">
+<input class="form-input w-full" id="guest-name" name="guest-name" placeholder="e.g., Luna Lovegood" type="text"/>
+</div>
+</div>
+</div>
+
+<!-- 家庭成員顯示區域 -->
+<div id="family-info-section" class="hidden bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+    <h3 class="text-lg font-semibold text-blue-800 mb-3 flex items-center">
+        <span class="material-symbols-outlined mr-2">family_restroom</span>
+        家庭成員清單
+    </h3>
+    <p class="text-sm text-blue-600 mb-3">
+        ⚡ <strong>一人報到 = 全家報到</strong> - 此賓客報到後，以下家庭成員將同時完成報到
+    </p>
+    <div id="family-members-list" class="space-y-2">
+        <!-- 家庭成員將動態載入到這裡 -->
+    </div>
+    <div class="mt-4 pt-4 border-t border-blue-200">
+        <div class="flex justify-between items-center">
+            <span class="text-sm font-medium text-blue-800">快速家庭報到</span>
+            <button id="family-checkin-btn" type="button" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors">
+                <span class="material-symbols-outlined text-lg">group</span>
+                全家報到
+            </button>
+        </div>
+        <p class="text-xs text-blue-600 mt-1">點擊「全家報到」可一次完成所有家庭成員的報到</p>
+    </div>
+</div>
+<div class="space-y-4 pt-4 border-t border-gray-200">
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div class="relative flex items-start">
+<div class="flex h-6 items-center">
+<input class="checkbox-custom" id="collect-money" name="collect-money" type="checkbox"/>
+</div>
+<div class="ml-3 text-sm leading-6">
+<label class="font-medium text-[var(--text-color)] cursor-pointer" for="collect-money">Collect Gift Money</label>
+</div>
+</div>
+<div class="relative flex items-start">
+<div class="flex h-6 items-center">
+<input class="checkbox-custom" id="has-cake" name="has-cake" type="checkbox"/>
+</div>
+<div class="ml-3 text-sm leading-6">
+<label class="font-medium text-[var(--text-color)] cursor-pointer" for="has-cake">Has Wedding Cake</label>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-end">
+<div id="gift-amount-section">
+<label class="block text-sm font-medium leading-6 text-[var(--text-color)]" for="gift-amount">Amount of Gift Money Collected</label>
+<div class="relative mt-2 rounded-md shadow-sm">
+<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+<span class="text-gray-500 sm:text-sm"></span>
+</div>
+<input class="form-input block w-full pl-20" disabled="" id="gift-amount" name="gift-amount" placeholder="0.00" type="number"/>
+</div>
+</div>
+<div class="relative flex items-start" id="cake-given-section">
+<div class="flex h-6 items-center">
+<input class="checkbox-custom" id="cake-given" name="cake-given" type="checkbox"/>
+</div>
+<div class="ml-3 text-sm leading-6">
+<label class="font-medium text-[var(--text-color)] cursor-pointer" for="cake-given">Wedding Cake Given</label>
+</div>
+</div>
+</div>
+<!-- 備註欄位 -->
+<div class="mt-6">
+<label class="block text-sm font-medium leading-6 text-[var(--text-color)]" for="remarks">備註 (Notes)</label>
+<div class="mt-2">
+<textarea class="form-input w-full resize-none" id="remarks" name="remarks" placeholder="特殊需求、處理狀態等備註..." rows="3"></textarea>
+</div>
+</div>
+<!-- 家庭成員清單（在check-in按鈕上方） -->
+<div id="family-members-summary" class="hidden mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+    <div class="flex items-center mb-3">
+        <span class="material-symbols-outlined text-blue-600 mr-2">group</span>
+        <h4 class="text-sm font-semibold text-blue-800">同一家庭成員</h4>
+    </div>
+    <div id="family-members-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <!-- 家庭成員將動態載入到這裡 -->
+    </div>
+    <p class="text-xs text-blue-600 mt-2">💡 此賓客報到後，所有家庭成員將同時完成報到</p>
+</div>
+
+<div class="pt-6 text-center">
+<button class="btn-primary inline-flex items-center gap-2" type="submit">
+<span class="magic-wand-icon text-lg">auto_fix_high</span> Check-in Successful
+                            </button>
+</div>
+</form>
+</div>
+</div>
+</main>
+</div>
+</div>
+<script>
+    // Google Apps Script URL 從配置文件載入
+    const GOOGLE_SCRIPT_URL = window.CONFIG?.GOOGLE_SCRIPT_URL || alert('請先設定 config.js 配置文件！');
+
+    // 回到賓客清單頁面
+    function goBack() {
+        // 添加時間戳確保頁面重新載入並刷新資料
+        window.location.href = 'guestlist.html?refresh=' + Date.now();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // 處理 URL 參數，預填賓客資訊
+        const urlParams = new URLSearchParams(window.location.search);
+        const serialNumber = urlParams.get('sn');
+        const guestName = urlParams.get('name');
+        const collectMoney = urlParams.get('collectMoney') === 'true';
+        const hasCake = urlParams.get('hasCake') === 'true';
+        const familyId = urlParams.get('familyId');
+        const familyMembersJson = urlParams.get('familyMembers');
+
+        if (serialNumber) {
+            document.getElementById('serial-number').value = serialNumber;
+        }
+        if (guestName) {
+            document.getElementById('guest-name').value = decodeURIComponent(guestName);
+
+            // 除錯：顯示所有接收到的參數
+            console.log('📋 報到畫面接收到的 URL 參數:', {
+                serialNumber: serialNumber,
+                guestName: guestName ? decodeURIComponent(guestName) : null,
+                collectMoney: collectMoney,
+                hasCake: hasCake,
+                familyId: familyId,
+                familyMembersJson: familyMembersJson ? '有資料' : '無資料',
+                allParams: Object.fromEntries(urlParams.entries())
+            });
+
+            // 如果有家庭成員資訊，直接顯示，不需要再發請求
+            if (familyId && familyMembersJson) {
+                try {
+                    const familyMembers = JSON.parse(decodeURIComponent(familyMembersJson));
+                    console.log('✅ 成功解析家庭成員資訊:', familyMembers);
+                    displayFamilyMembersFromURL(familyMembers);
+                } catch (error) {
+                    console.log('❌ 解析家庭成員資訊失敗:', error);
+                }
+            } else {
+                console.log('ℹ️  無家庭成員資訊 - familyId:', familyId, 'familyMembersJson:', familyMembersJson);
+            }
+        }
+        if (collectMoney) {
+            document.getElementById('collect-money').checked = true;
+        }
+        if (hasCake) {
+            document.getElementById('has-cake').checked = true;
+        }
+
+        const collectMoneyCheckbox = document.getElementById('collect-money');
+        const giftAmountInput = document.getElementById('gift-amount');
+        const giftAmountSection = document.getElementById('gift-amount-section');
+        const form = document.querySelector('form');
+
+        function toggleGiftAmount() {
+            if (collectMoneyCheckbox.checked) {
+                giftAmountInput.disabled = false;
+                giftAmountSection.classList.remove('opacity-50');
+            } else {
+                giftAmountInput.disabled = true;
+                giftAmountInput.value = '';
+                giftAmountSection.classList.add('opacity-50');
+            }
+        }
+
+        collectMoneyCheckbox.addEventListener('change', toggleGiftAmount);
+
+        // 表單提交處理
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const button = form.querySelector('button[type="submit"]');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<span class="magic-wand-icon text-lg">hourglass_top</span> 提交中...';
+            button.disabled = true;
+
+            try {
+                const formData = new FormData(form);
+                const data = {
+                    serialNumber: formData.get('serial-number'),
+                    guestName: formData.get('guest-name'),
+                    collectMoney: formData.get('collect-money') === 'on',
+                    giftAmount: parseInt(formData.get('gift-amount')) || 0,
+                    hasCake: formData.get('has-cake') === 'on',
+                    cakeGiven: formData.get('cake-given') === 'on',
+                    remarks: formData.get('remarks') || ''
+                };
+
+                // 調試：顯示要傳送的資料
+                console.log('準備傳送的資料:', data);
+                console.log('表單原始資料:', {
+                    'serial-number': formData.get('serial-number'),
+                    'guest-name': formData.get('guest-name'),
+                    'collect-money': formData.get('collect-money'),
+                    'gift-amount': formData.get('gift-amount'),
+                    'has-cake': formData.get('has-cake'),
+                    'cake-given': formData.get('cake-given')
+                });
+
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                // no-cors 模式無法讀取回應，假設提交成功
+                console.log('資料已提交 (no-cors 模式)');
+
+                // 成功提示
+                button.innerHTML = '<span class="magic-wand-icon text-lg">check_circle</span> 簽到成功！';
+                button.style.backgroundColor = '#22c55e';
+
+                // 2秒後自動跳轉回賓客清單，傳遞報到資訊用於本地更新
+                setTimeout(() => {
+                    const checkInParams = new URLSearchParams({
+                        refresh: Date.now(),
+                        localUpdate: 'true',
+                        sn: data.serialNumber,
+                        name: encodeURIComponent(data.guestName),
+                        collectMoney: data.collectMoney || false,
+                        giftAmount: data.giftAmount || 0,
+                        hasCake: data.hasCake || false,
+                        cakeGiven: data.cakeGiven || false
+                    });
+                    window.location.href = `guestlist.html?${checkInParams.toString()}`;
+                }, 2000);
+
+            } catch (error) {
+                console.error('Error:', error);
+                button.innerHTML = '<span class="magic-wand-icon text-lg">error</span> 提交失敗，請重試';
+                button.style.backgroundColor = '#ef4444';
+
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.style.backgroundColor = 'var(--primary-color)';
+                    button.disabled = false;
+                }, 3000);
+            }
+        });
+
+        // Initial state
+        toggleGiftAmount();
+    });
+
+    // 簡單查詢家庭成員並在check-in按鈕上方顯示 (使用JSONP)
+    function loadFamilyMembersSimple(guestName) {
+        if (!guestName || guestName.trim() === '') {
+            hideFamilyMembersSimple();
+            return;
+        }
+
+        // 清理之前的 JSONP script 標籤
+        const oldScript = document.querySelector('script[data-jsonp="family-info"]');
+        if (oldScript) {
+            oldScript.remove();
+        }
+
+        // 設定全域回調函數
+        window.handleFamilyInfo = function(response) {
+            console.log('家庭資訊 JSONP 回應:', response);
+
+            if (response.hasFamilyInfo && response.familyMembers && response.familyMembers.length > 1) {
+                displayFamilyMembersSimple(response.familyMembers);
+            } else {
+                hideFamilyMembersSimple();
+            }
+        };
+
+        // 創建 JSONP script 標籤
+        const script = document.createElement('script');
+        script.setAttribute('data-jsonp', 'family-info');
+
+        const params = new URLSearchParams({
+            action: 'getFamilyInfo',
+            guestName: guestName,
+            callback: 'handleFamilyInfo',
+            _t: Date.now()
+        });
+
+        script.src = `${GOOGLE_SCRIPT_URL}?${params.toString()}`;
+
+        // 錯誤處理
+        script.onerror = function() {
+            console.log('JSONP 家庭資訊查詢失敗');
+            hideFamilyMembersSimple();
+        };
+
+        // 添加到頁面
+        document.head.appendChild(script);
+
+        console.log('發送家庭資訊 JSONP 請求:', script.src);
+    }
+
+    // 直接從 URL 參數顯示家庭成員（無需網路請求）
+    function displayFamilyMembersFromURL(familyMembers) {
+        const summarySection = document.getElementById('family-members-summary');
+        const membersGrid = document.getElementById('family-members-grid');
+
+        if (!familyMembers || familyMembers.length <= 1) {
+            hideFamilyMembersSimple();
+            return;
+        }
+
+        // 生成家庭成員網格
+        membersGrid.innerHTML = familyMembers.map(member => `
+            <div class="flex items-center space-x-2 text-sm">
+                <span class="material-symbols-outlined text-blue-600" style="font-size: 16px;">person</span>
+                <span class="text-gray-700">${member.memberName}</span>
+                <span class="ml-auto ${member.isCheckedIn ? 'text-green-600' : 'text-gray-400'} text-xs">
+                    ${member.isCheckedIn ? '✓' : '○'}
+                </span>
+            </div>
+        `).join('');
+
+        // 顯示家庭資訊區域
+        summarySection.classList.remove('hidden');
+        console.log('家庭成員資訊已從 URL 參數直接載入，無需額外請求');
+    }
+
+    // 在check-in按鈕上方顯示家庭成員（JSONP 版本 - 保留備用）
+    function displayFamilyMembersSimple(familyMembers) {
+        displayFamilyMembersFromURL(familyMembers);
+    }
+
+    // 隱藏家庭成員簡單清單
+    function hideFamilyMembersSimple() {
+        const summarySection = document.getElementById('family-members-summary');
+        summarySection.classList.add('hidden');
+    }
+
+    // 查詢家庭成員資訊（簡化版）
+    async function loadFamilyInfo(guestName) {
+        if (!guestName || guestName.trim() === '') return;
+
+        try {
+            // 調用 Google Apps Script 查詢家庭資訊
+            const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=getFamilyInfo&guestName=${encodeURIComponent(guestName)}`, {
+                method: 'GET',
+                mode: 'cors'
+            });
+
+            if (!response.ok) {
+                console.log('無法查詢家庭資訊');
+                hideFamilyInfo();
+                return;
+            }
+
+            const familyInfo = await response.json();
+
+            if (familyInfo.hasFamilyInfo && familyInfo.familyMembers && familyInfo.familyMembers.length > 1) {
+                displayFamilyMembers(familyInfo.familyMembers);
+            } else {
+                hideFamilyInfo();
+            }
+
+        } catch (error) {
+            console.log('查詢家庭資訊失敗:', error);
+            hideFamilyInfo();
+        }
+    }
+
+    // 顯示家庭成員清單
+    function displayFamilyMembers(familyMembers) {
+        const familySection = document.getElementById('family-info-section');
+        const membersList = document.getElementById('family-members-list');
+        const familyCheckinBtn = document.getElementById('family-checkin-btn');
+
+        if (!familyMembers || familyMembers.length === 0) {
+            hideFamilyInfo();
+            return;
+        }
+
+        // 儲存家庭成員資料供快速報到使用
+        window.currentFamilyMembers = familyMembers;
+
+        // 生成家庭成員清單HTML（簡化版）
+        membersList.innerHTML = familyMembers.map(member => `
+            <div class="flex items-center justify-between bg-white p-3 rounded border">
+                <div class="flex items-center space-x-3">
+                    <span class="material-symbols-outlined text-blue-600">person</span>
+                    <div>
+                        <div class="font-medium text-gray-900">${member.memberName}</div>
+                        <div class="text-sm text-gray-500">家庭成員</div>
+                    </div>
+                </div>
+                <div class="text-sm">
+                    ${member.isCheckedIn ?
+                        '<span class="bg-green-100 text-green-800 px-2 py-1 rounded-full">已報到</span>' :
+                        '<span class="bg-gray-100 text-gray-600 px-2 py-1 rounded-full">未報到</span>'
+                    }
+                </div>
+            </div>
+        `).join('');
+
+        // 檢查是否有未報到的成員
+        const hasUncheckedMembers = familyMembers.some(member => !member.isCheckedIn);
+
+        if (hasUncheckedMembers) {
+            familyCheckinBtn.disabled = false;
+            familyCheckinBtn.innerHTML = '<span class="material-symbols-outlined text-lg">group</span> 全家報到';
+            familyCheckinBtn.className = 'bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors';
+        } else {
+            familyCheckinBtn.disabled = true;
+            familyCheckinBtn.innerHTML = '<span class="material-symbols-outlined text-lg">check_circle</span> 全家已報到';
+            familyCheckinBtn.className = 'bg-gray-400 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 cursor-not-allowed';
+        }
+
+        // 顯示家庭資訊區域
+        familySection.classList.remove('hidden');
+    }
+
+    // 隱藏家庭資訊
+    function hideFamilyInfo() {
+        const familySection = document.getElementById('family-info-section');
+        familySection.classList.add('hidden');
+    }
+
+    // 快速家庭報到功能
+    async function processFamilyCheckIn() {
+        if (!window.currentFamilyMembers) {
+            alert('沒有家庭成員資訊');
+            return;
+        }
+
+        const familyCheckinBtn = document.getElementById('family-checkin-btn');
+        const originalText = familyCheckinBtn.innerHTML;
+
+        // 取得表單資料
+        const formData = new FormData(document.querySelector('form'));
+        const data = {
+            guestName: formData.get('guest-name'),
+            serialNumber: formData.get('serial-number'),
+            collectMoney: formData.get('collect-money') === 'on',
+            giftAmount: parseInt(formData.get('gift-amount')) || 0,
+            hasCake: formData.get('has-cake') === 'on',
+            cakeGiven: formData.get('cake-given') === 'on',
+            remarks: formData.get('remarks') || ''
+        };
+
+        // 更新按鈕狀態
+        familyCheckinBtn.innerHTML = '<span class="material-symbols-outlined text-lg animate-spin">hourglass_top</span> 處理中...';
+        familyCheckinBtn.disabled = true;
+
+        try {
+            const response = await fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+
+            // 成功提示
+            familyCheckinBtn.innerHTML = '<span class="material-symbols-outlined text-lg">check_circle</span> 全家報到成功！';
+            familyCheckinBtn.className = 'bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2';
+
+            // 2秒後跳轉回賓客清單
+            setTimeout(() => {
+                window.location.href = 'guestlist.html?refresh=' + Date.now();
+            }, 2000);
+
+        } catch (error) {
+            console.error('快速家庭報到失敗:', error);
+            familyCheckinBtn.innerHTML = '<span class="material-symbols-outlined text-lg">error</span> 報到失敗';
+            familyCheckinBtn.className = 'bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2';
+
+            // 3秒後恢復原狀態
+            setTimeout(() => {
+                familyCheckinBtn.innerHTML = originalText;
+                familyCheckinBtn.className = 'bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors';
+                familyCheckinBtn.disabled = false;
+            }, 3000);
+        }
+    }
+
+    // 添加事件監聽器
+    document.addEventListener('DOMContentLoaded', function() {
+        const guestNameInput = document.getElementById('guest-name');
+        const familyCheckinBtn = document.getElementById('family-checkin-btn');
+        let inputTimer;
+
+        // 賓客姓名輸入監聽器（已優化：家庭資訊從 URL 直接載入，不需要即時查詢）
+        // guestNameInput.addEventListener('input', function() {
+        //     const guestName = this.value.trim();
+        //
+        //     // 清除之前的計時器
+        //     clearTimeout(inputTimer);
+        //
+        //     // 500ms 後執行查詢（防止頻繁查詢）
+        //     inputTimer = setTimeout(() => {
+        //         if (guestName) {
+        //             loadFamilyMembersSimple(guestName);
+        //         } else {
+        //             hideFamilyMembersSimple();
+        //         }
+        //     }, 500);
+        // });
+
+        // 快速家庭報到按鈕監聽器
+        familyCheckinBtn.addEventListener('click', processFamilyCheckIn);
+    });
+</script>
+
+</body></html>
