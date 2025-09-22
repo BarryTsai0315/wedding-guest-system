@@ -2,12 +2,13 @@
 <html lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Guest List - Enchanted Check-In</title>
+<title>預言家日報 - 霍格華茲賓客名冊</title>
 <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
 <link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Newsreader%3Awght%40400%3B500%3B700%3B800&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" onload="this.rel='stylesheet'" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
 <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
-<script src="../config/config.js"></script>
+<script src="../../config/config.js"></script>
+<link rel="stylesheet" href="../../assets/css/harry-potter.css">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <style type="text/tailwindcss">
         :root {
@@ -25,30 +26,7 @@
         body {
             font-family: 'Newsreader', 'Noto Sans', sans-serif;
         }
-        .checkbox-custom {
-            appearance: none;
-            width: 1.25rem;
-            height: 1.25rem;
-            border: 2px solid var(--subtle-border);
-            border-radius: 0.375rem;
-            cursor: pointer;
-            position: relative;
-            transition: all 0.2s ease-in-out;
-            background-color: transparent;
-        }
-        .checkbox-custom:checked {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-        .checkbox-custom:checked::after {
-            content: "✔";
-            color: white;
-            font-size: 0.8rem;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
+        /* 魔法複選框樣式已移至 harry-potter.css */
         .btn-primary {
             background-color: var(--primary-color);
             color: white;
@@ -97,15 +75,15 @@
             background-color: var(--checked-in-bg);
             color: var(--checked-in-text);
         }
-         .checked-in-row .checkbox-custom {
-            border-color: #a5d6a7;
+         .checked-in-row .checkbox-magical {
+            border-color: var(--hp-sage-green);
         }
         .unchecked-row {
             background-color: var(--unchecked-bg);
             color: var(--unchecked-text);
         }
-        .unchecked-row .checkbox-custom {
-             border-color: #e0e0e0;
+        .unchecked-row .checkbox-magical {
+             border-color: var(--hp-golden);
         }
 
         /* 家庭群組樣式 - 粗框版本 */
@@ -171,10 +149,13 @@
 <body class="bg-[var(--background-color)]">
 <div class="relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden">
 <div class="layout-container flex h-full grow flex-col">
-<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[var(--subtle-border)] bg-white px-10 py-4 shadow-sm">
-<div class="flex items-center gap-3 text-[var(--text-color)]">
-<span class="material-symbols-outlined text-3xl text-[var(--primary-color)]">auto_stories</span>
-<h1 class="text-xl font-bold leading-tight tracking-[-0.015em]">Enchanted Check-In</h1>
+<header class="magical-header flex items-center justify-between whitespace-nowrap px-6 py-6 md:px-10">
+<div class="flex items-center gap-4 text-white">
+<span class="material-symbols-outlined text-4xl text-[var(--hp-parchment)] magic-sparkle">auto_stories</span>
+<div>
+<h1 class="hogwarts-title text-2xl md:text-3xl font-bold leading-tight">預言家日報</h1>
+<p class="text-[var(--hp-parchment)] text-sm opacity-90">Hogwarts Guest Registry</p>
+</div>
 </div>
 <div class="flex flex-1 justify-end gap-6">
 <nav class="flex items-center gap-8">
@@ -194,12 +175,12 @@
 <main class="flex-1 p-6 sm:p-10">
 <div class="mx-auto max-w-7xl">
 <div class="flex items-center justify-between mb-8">
-<h2 class="text-3xl font-bold text-[var(--text-color)] tracking-tight">Guest List</h2>
-<button class="btn-primary" type="button">
-<span class="material-symbols-outlined text-lg">person_add</span> Add New Guest
-            </button>
+<h2 class="text-3xl font-bold text-[var(--hp-brown)] tracking-tight">賓客名冊</h2>
+<a href="../../index.html" class="btn-hogwarts">
+<span class="material-symbols-outlined text-lg">home</span> 回到主頁
+</a>
 </div>
-<div class="bg-white rounded-2xl shadow-lg border border-[var(--subtle-border)] overflow-hidden">
+<div class="magic-table rounded-2xl overflow-hidden">
 <!-- 搜尋欄位 -->
 <div class="p-6 border-b border-[var(--subtle-border)]">
 <div class="relative max-w-md">
@@ -213,14 +194,14 @@
 </div>
 <div class="overflow-x-auto">
 <table class="w-full text-sm">
-<thead class="bg-gray-800">
+<thead>
 <tr>
-<th class="table-header">S/N</th>
-<th class="table-header">Guest Name</th>
-<th class="table-header text-center">Family</th>
-<th class="table-header text-center">Collect Gift Money</th>
-<th class="table-header text-center">Has Wedding Cake</th>
-<th class="table-header"></th>
+<th class="table-header">序號</th>
+<th class="table-header">賓客姓名</th>
+<th class="table-header text-center">家庭編號</th>
+<th class="table-header text-center">收禮金</th>
+<th class="table-header text-center">有喜餅</th>
+<th class="table-header text-center">狀態</th>
 </tr>
 </thead>
 <tbody id="guest-table-body" class="divide-y divide-[var(--subtle-border)]">
@@ -710,8 +691,8 @@
         tbody.innerHTML = groupedData.map(guest => {
             const isCheckedIn = guest.checkedIn;
             const rowClass = isCheckedIn ? 'checked-in-row' : 'unchecked-row';
-            const buttonClass = isCheckedIn ? 'btn-primary bg-green-200 text-green-800 hover:bg-green-300' : 'btn-primary';
-            const buttonText = isCheckedIn ? '<span class="magic-wand-icon">edit</span> 已報到' : '<span class="magic-wand-icon">login</span> 未報到';
+            const buttonClass = isCheckedIn ? 'btn-hogwarts bg-green-200 text-green-800 hover:bg-green-300' : 'btn-hogwarts';
+            const buttonText = isCheckedIn ? '<span class="material-symbols-outlined magic-sparkle">edit</span> 已報到' : '<span class="material-symbols-outlined magic-sparkle">login</span> 未報到';
             const buttonAction = isCheckedIn ? `viewGuestDetails('${guest.serialNumber}')` : `goToCheckin('${guest.serialNumber}', '${guest.guestName}', ${guest.collectMoney}, ${guest.hasCake})`;
 
             // 添加家庭群組樣式
@@ -725,12 +706,12 @@
                     <td class="table-cell text-center">${familyDisplay}</td>
                     <td class="table-cell text-center">
                         <input ${guest.collectMoney ? 'checked' : ''}
-                               class="checkbox-custom ${isCheckedIn ? 'border-green-300' : ''}"
+                               class="checkbox-magical ${isCheckedIn ? 'border-green-300' : ''}"
                                type="checkbox" disabled/>
                     </td>
                     <td class="table-cell text-center">
                         <input ${guest.hasCake ? 'checked' : ''}
-                               class="checkbox-custom ${isCheckedIn ? 'border-green-300' : ''}"
+                               class="checkbox-magical ${isCheckedIn ? 'border-green-300' : ''}"
                                type="checkbox" disabled/>
                     </td>
                     <td class="table-cell text-right">

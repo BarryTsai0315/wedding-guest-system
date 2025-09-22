@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>霍格華茲婚禮賓客系統 - Enchanted Wedding Check-In</title>
+    <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+    <link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Newsreader%3Awght%40400%3B500%3B700%3B800&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" onload="this.rel='stylesheet'" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+    <script src="config/config.js"></script>
+    <link rel="stylesheet" href="assets/css/harry-potter.css">
+    <script src="assets/js/auth.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <style>
+        /* 首頁專用樣式 */
+        .welcome-text {
+            color: var(--hp-brown);
+            font-size: 1.2rem;
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .task-icon {
+            font-size: 3rem;
+            color: var(--hp-brown);
+            margin-bottom: 1rem;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .btn-hogwarts {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+        }
+
+        .btn-ministry {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .feature-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .magic-card {
+                padding: 1.5rem;
+            }
+
+            .btn-hogwarts {
+                padding: 0.75rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-[var(--background-color)]">
+    <div class="relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden">
+        <div class="layout-container flex h-full grow flex-col">
+            <!-- 魔法標題區域 -->
+            <header class="magical-header flex items-center justify-between whitespace-nowrap px-6 py-6 md:px-10">
+                <div class="flex items-center gap-4 text-white">
+                    <span class="material-symbols-outlined text-4xl text-[var(--hp-parchment)] magic-sparkle">auto_stories</span>
+                    <div>
+                        <h1 class="hogwarts-title text-2xl md:text-3xl font-bold leading-tight">霍格華茲婚禮系統</h1>
+                        <p class="text-[var(--hp-parchment)] text-sm opacity-90">Enchanted Wedding Check-In System</p>
+                    </div>
+                </div>
+
+                <!-- 魔法部工作人員登入 -->
+                <div class="flex items-center gap-4">
+                    <div class="status-indicator">
+                        <span class="material-symbols-outlined text-lg magic-sparkle">shield</span>
+                        <span id="auth-status">訪客模式</span>
+                    </div>
+                    <button id="ministry-login" class="btn-ministry">
+                        <span class="material-symbols-outlined">badge</span>
+                        <span>魔法部驗證</span>
+                    </button>
+                </div>
+            </header>
+
+            <main class="flex-1 p-6 md:p-10">
+                <div class="mx-auto max-w-6xl">
+                    <!-- 歡迎訊息 -->
+                    <div class="text-center mb-12">
+                        <h2 class="text-4xl md:text-5xl font-bold text-[var(--hp-brown)] mb-4 tracking-tight">
+                            歡迎來到魔法婚禮
+                        </h2>
+                        <div class="magical-divider"></div>
+                        <p class="welcome-text max-w-2xl mx-auto">
+                            在這個特別的日子裡，讓我們用魔法的方式管理每一位貴賓的到來。
+                            <br>請選擇您需要的服務，開始您的魔法之旅。
+                        </p>
+                    </div>
+
+                    <!-- 功能卡片區域 -->
+                    <div class="feature-grid">
+                        <!-- 賓客報到 - 魔法門鑰 -->
+                        <div class="magic-card p-8 text-center">
+                            <div class="task-icon">
+                                <span class="material-symbols-outlined">key</span>
+                            </div>
+                            <h3 class="text-2xl font-bold text-[var(--hp-brown)] mb-4">魔法門鑰</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">
+                                為賓客提供快速報到服務，記錄禮金和喜餅資訊，
+                                讓每位賓客都能順利進入婚禮現場。
+                            </p>
+                            <a href="src/pages/checkin.html" class="btn-hogwarts">
+                                <span class="material-symbols-outlined">login</span>
+                                開始報到
+                            </a>
+                        </div>
+
+                        <!-- 賓客名冊 - 預言家日報 -->
+                        <div class="magic-card p-8 text-center">
+                            <div class="task-icon">
+                                <span class="material-symbols-outlined">newspaper</span>
+                            </div>
+                            <h3 class="text-2xl font-bold text-[var(--hp-brown)] mb-4">預言家日報</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">
+                                查看所有賓客的報到狀況，搜尋特定賓客資訊，
+                                即時掌握婚禮現場的人員動態。
+                            </p>
+                            <a href="src/pages/guestlist.html" class="btn-hogwarts">
+                                <span class="material-symbols-outlined">list</span>
+                                查看名冊
+                            </a>
+                        </div>
+
+                        <!-- 禮金統計 - 古靈閣金庫 -->
+                        <div class="magic-card p-8 text-center">
+                            <div class="task-icon">
+                                <span class="material-symbols-outlined">account_balance</span>
+                            </div>
+                            <h3 class="text-2xl font-bold text-[var(--hp-brown)] mb-4">古靈閣金庫</h3>
+                            <p class="text-gray-600 mb-6 leading-relaxed">
+                                統計禮金收入和喜餅發放情況，
+                                提供詳細的財務報表和數據分析。
+                            </p>
+                            <button id="statistics-btn" class="btn-hogwarts" onclick="showComingSoon()">
+                                <span class="material-symbols-outlined">trending_up</span>
+                                查看統計
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 管理功能區域 (需要登入) -->
+                    <div id="admin-section" class="hidden mt-12">
+                        <div class="magical-divider"></div>
+                        <h3 class="text-2xl font-bold text-[var(--hp-brown)] text-center mb-8">管理員專區</h3>
+                        <div class="feature-grid max-w-4xl mx-auto">
+                            <div class="magic-card p-6 text-center">
+                                <div class="task-icon text-2xl">
+                                    <span class="material-symbols-outlined">dashboard</span>
+                                </div>
+                                <h4 class="text-xl font-bold text-[var(--hp-brown)] mb-3">管理儀表板</h4>
+                                <p class="text-gray-600 mb-4">系統概覽與即時統計</p>
+                                <button class="btn-hogwarts text-sm" onclick="showComingSoon()">
+                                    <span class="material-symbols-outlined text-lg">analytics</span>
+                                    進入儀表板
+                                </button>
+                            </div>
+
+                            <div class="magic-card p-6 text-center">
+                                <div class="task-icon text-2xl">
+                                    <span class="material-symbols-outlined">settings</span>
+                                </div>
+                                <h4 class="text-xl font-bold text-[var(--hp-brown)] mb-3">系統設定</h4>
+                                <p class="text-gray-600 mb-4">權限管理與參數設定</p>
+                                <button class="btn-hogwarts text-sm" onclick="showComingSoon()">
+                                    <span class="material-symbols-outlined text-lg">tune</span>
+                                    系統設定
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 系統狀態指示器 -->
+                    <div class="mt-12 text-center">
+                        <div class="magical-divider"></div>
+                        <div class="flex flex-wrap justify-center gap-4 mt-6">
+                            <div class="status-indicator">
+                                <span class="material-symbols-outlined text-green-600">cloud_done</span>
+                                <span>系統運行正常</span>
+                            </div>
+                            <div class="status-indicator">
+                                <span class="material-symbols-outlined text-blue-600 magic-sparkle">sync</span>
+                                <span>資料同步中</span>
+                            </div>
+                            <div class="status-indicator">
+                                <span class="material-symbols-outlined text-purple-600">security</span>
+                                <span>安全連線</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- 頁腳 -->
+            <footer class="magical-header px-6 py-4 md:px-10">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="text-[var(--hp-parchment)] text-sm">
+                        <span class="material-symbols-outlined text-lg mr-2 magic-sparkle">auto_awesome</span>
+                        Powered by Hogwarts Magic © 2024
+                    </div>
+                    <div class="text-white text-sm opacity-75">
+                        Version 2.0 - Enhanced with Harry Potter Theme
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        // 基礎 JavaScript 功能
+        function showComingSoon() {
+            alert('🧙‍♂️ 此功能正在開發中，敬請期待魔法完成！');
+        }
+
+        // OAuth 登入已整合到 auth.js 中
+
+        // 頁面載入完成後的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🏰 霍格華茲婚禮系統已啟動');
+
+            // 檢查配置是否載入
+            if (typeof window.CONFIG === 'undefined') {
+                console.warn('⚠️ 配置文件未載入，某些功能可能無法正常使用');
+            }
+
+            // 手動綁定魔法部驗證按鈕 (防止 auth.js 載入延遲)
+            const loginButton = document.getElementById('ministry-login');
+            if (loginButton) {
+                loginButton.addEventListener('click', function() {
+                    console.log('🔐 魔法部驗證按鈕被點擊');
+
+                    // 檢查 weddingAuth 是否已初始化
+                    if (window.weddingAuth && window.weddingAuth.isInitialized) {
+                        if (window.weddingAuth.isAuthenticated()) {
+                            window.weddingAuth.signOut();
+                        } else {
+                            window.weddingAuth.signIn();
+                        }
+                    } else {
+                        console.warn('⚠️ OAuth 系統尚未初始化，請稍後再試');
+                        alert('⚠️ 系統正在初始化中，請稍後再試');
+
+                        // 3秒後重試
+                        setTimeout(() => {
+                            if (window.weddingAuth && window.weddingAuth.isInitialized) {
+                                window.weddingAuth.signIn();
+                            } else {
+                                alert('❌ 系統初始化失敗，請重新載入頁面');
+                            }
+                        }, 3000);
+                    }
+                });
+
+                console.log('✅ 魔法部驗證按鈕事件已綁定');
+            }
+
+            // 添加魔法粒子效果 (簡單版本)
+            addMagicalSparkles();
+        });
+
+        function addMagicalSparkles() {
+            const sparkleElements = document.querySelectorAll('.magic-sparkle');
+            sparkleElements.forEach(element => {
+                // 為魔法元素添加隨機延遲
+                const delay = Math.random() * 2;
+                element.style.animationDelay = `${delay}s`;
+            });
+        }
+    </script>
+</body>
+</html>

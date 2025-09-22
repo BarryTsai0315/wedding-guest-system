@@ -15,17 +15,28 @@ window.CONFIG = {
     // 2. 執行身分：我
     // 3. 存取權限：任何人
     // 4. 複製部署後的 Web App URL
+    GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec',
 
-    GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwCAkPGgqCPNrxPwiknPjxyQxHNDDTGGkxQnTjW8pffTTHcygP3pWcvMtqsLzsnKN61/exec',
+    // Google OAuth 2.0 配置 (用於工作人員驗證)
+    // 取得方式：
+    // 1. 前往 Google Cloud Console
+    // 2. 建立新專案或選擇現有專案
+    // 3. 啟用 Google+ API
+    // 4. 建立 OAuth 2.0 客戶端 ID (Web 應用程式)
+    // 5. 將網站網域加入授權來源
+    GOOGLE_CLIENT_ID: 'YOUR_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com',
 
     // Google Sheets 配置 (用於 Google Apps Script 後端)
     GOOGLE_SHEETS: {
         // Google Sheets ID (從 URL 中取得)
         // 例如：https://docs.google.com/spreadsheets/d/SPREADSHEET_ID/edit
-        SPREADSHEET_ID: '1B1m0BDaMKbXqKOrxVtYUcGW0122Pg3nYfmpu840CIBw',
+        SPREADSHEET_ID: 'YOUR_SPREADSHEET_ID_HERE',
 
         // 工作表名稱
-        SHEET_NAME: 'guestList'
+        SHEET_NAME: 'guestList',
+
+        // 工作人員權限工作表名稱
+        STAFF_SHEET_NAME: 'staffList'
     },
 
     // 系統配置

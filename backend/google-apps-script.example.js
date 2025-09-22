@@ -1,13 +1,14 @@
 /**
  * 婚禮系統 Google Apps Script 範例
- * 功能：處理報到清單的資料讀取和報到畫面的資料寫入
+ * 功能：處理報到清單的資料讀取、報到畫面的資料寫入、工作人員權限驗證
  * 部署：Web App，執行身分：我，存取權限：任何人
- * 
+ *
  * 使用說明：
  * 1. 複製此文件內容到 Google Apps Script
  * 2. 替換 YOUR_SPREADSHEET_ID_HERE 為實際的 Google Sheets ID
  * 3. 調整 SHEET_NAME 為實際的工作表名稱
- * 4. 部署為 Web App 並取得 URL
+ * 4. 建立 staffList 工作表並設定權限清單
+ * 5. 部署為 Web App 並取得 URL
  */
 
 /**
@@ -55,12 +56,15 @@ function doGet(e) {
     const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
     const GUEST_SHEET_NAME = 'guestList'; // 賓客資料工作表
     const FAMILY_SHEET_NAME = 'familyGroups'; // 家庭關係工作表
+    const STAFF_SHEET_NAME = 'staffList'; // 工作人員權限工作表
     
     const action = e.parameter.action || 'getGuests';
     
     // 根據動作類型處理不同請求
     if (action === 'getFamilyInfo') {
       return getFamilyInfoByName(SPREADSHEET_ID, GUEST_SHEET_NAME, FAMILY_SHEET_NAME, e.parameter.guestName, e.parameter.callback);
+    } else if (action === 'checkPermission') {
+      return checkStaffPermission(SPREADSHEET_ID, STAFF_SHEET_NAME, e.parameter.email, e.parameter.callback);
     } else {
       return getGuestList(SPREADSHEET_ID, GUEST_SHEET_NAME, e);
     }
@@ -490,19 +494,175 @@ function doOptions(e) {
  * - 前端顯示家庭編號欄位和橢圓形群組視覺效果
  */
 
+/**
+ * 檢查工作人員權限
+ * @param {string} spreadsheetId - Google Sheets ID
+ * @param {string} staffSheetName - 工作人員權限工作表名稱
+ * @param {string} email - 要檢查的 Email 地址
+ * @param {string} callback - JSONP 回調函數名稱
+ * @return {TextOutput} 權限檢查結果
+ */
+function checkStaffPermission(spreadsheetId, staffSheetName, email, callback) {
+  try {
+    console.log('=== 檢查工作人員權限 ===');
+    console.log('檢查的 Email:', email);
+
+    if (!email) {
+      return createJSONPResponse({
+        error: 'Email 參數不能為空',
+        role: 'guest'
+      }, callback);
+    }
+
+    // 開啟 Google Sheets
+    const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    let staffSheet;
+
+    try {
+      staffSheet = spreadsheet.getSheetByName(staffSheetName);
+    } catch (error) {
+      console.log('工作表不存在，建立新的工作表:', staffSheetName);
+
+      // 建立新的工作表並設定標題
+      staffSheet = spreadsheet.insertSheet(staffSheetName);
+      staffSheet.getRange(1, 1, 1, 7).setValues([
+        ['email', 'role', 'name', 'status', 'lastLogin', 'createdDate', 'notes']
+      ]);
+
+      // 設定標題樣式
+      const headerRange = staffSheet.getRange(1, 1, 1, 7);
+      headerRange.setFontWeight('bold');
+      headerRange.setBackground('#f3e9d8');
+
+      console.log('已建立工作人員權限工作表');
+    }
+
+    // 取得所有資料
+    const lastRow = Math.max(2, staffSheet.getLastRow()); // 至少從第2行開始
+    const data = staffSheet.getRange(2, 1, lastRow - 1, 7).getValues();
+
+    console.log('工作表資料筆數:', data.length);
+
+    // 尋找匹配的 Email
+    const userRow = data.find(row => {
+      const rowEmail = (row[0] || '').toString().toLowerCase().trim();
+      const searchEmail = email.toLowerCase().trim();
+      return rowEmail === searchEmail;
+    });
+
+    if (userRow) {
+      const role = userRow[1] || 'staff'; // 預設為 staff
+      const status = userRow[3] || 'active'; // 預設為 active
+
+      console.log('找到用戶:', {
+        email: userRow[0],
+        role: role,
+        name: userRow[2],
+        status: status
+      });
+
+      // 檢查狀態是否啟用
+      if (status.toLowerCase() !== 'active') {
+        return createJSONPResponse({
+          error: '帳號已停用',
+          role: 'guest'
+        }, callback);
+      }
+
+      // 更新最後登入時間
+      const rowIndex = data.indexOf(userRow) + 2; // +2 是因為陣列從0開始，工作表從第2行開始
+      staffSheet.getRange(rowIndex, 5).setValue(new Date().toISOString());
+
+      return createJSONPResponse({
+        success: true,
+        role: role,
+        name: userRow[2] || email.split('@')[0],
+        lastLogin: new Date().toISOString()
+      }, callback);
+
+    } else {
+      console.log('用戶不在權限清單中:', email);
+
+      return createJSONPResponse({
+        error: '用戶不在權限清單中',
+        role: 'guest'
+      }, callback);
+    }
+
+  } catch (error) {
+    console.log('=== 權限檢查發生錯誤 ===');
+    console.log('錯誤訊息:', error.toString());
+    console.log('錯誤堆疊:', error.stack);
+
+    return createJSONPResponse({
+      error: error.toString(),
+      role: 'guest'
+    }, callback);
+  }
+}
+
+/**
+ * 手動新增工作人員 (供管理員使用)
+ * 可以直接在 Google Sheets 中新增，或透過這個函數
+ */
+function addStaffMember(email, role = 'staff', name = '', notes = '') {
+  try {
+    const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
+    const STAFF_SHEET_NAME = 'staffList';
+
+    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const staffSheet = spreadsheet.getSheetByName(STAFF_SHEET_NAME);
+
+    // 新增一行資料
+    staffSheet.appendRow([
+      email,
+      role, // 'admin' 或 'staff'
+      name || email.split('@')[0],
+      'active',
+      '', // lastLogin
+      new Date().toISOString(), // createdDate
+      notes
+    ]);
+
+    console.log('已新增工作人員:', email, role);
+
+  } catch (error) {
+    console.log('新增工作人員失敗:', error.toString());
+  }
+}
+
+/**
+ * 範例：新增一些測試用戶 (首次設定時執行)
+ */
+function setupInitialStaff() {
+  // 請替換為實際的 Email 地址
+  addStaffMember('admin@example.com', 'admin', '系統管理員', '系統初始管理員');
+  addStaffMember('staff1@example.com', 'staff', '工作人員一', '');
+  addStaffMember('staff2@example.com', 'staff', '工作人員二', '');
+
+  console.log('初始工作人員設定完成');
+}
+
 /*
  * 部署設定：
  * 1. 在 Google Apps Script 中建立新專案
  * 2. 貼上此程式碼
  * 3. 替換 YOUR_SPREADSHEET_ID_HERE 為實際的 Google Sheets ID
  * 4. 建立 familyGroups 工作表並設定家庭關係資料
- * 5. 部署為 Web App：
+ * 5. 建立 staffList 工作表並設定工作人員權限 (或執行 setupInitialStaff 函數)
+ * 6. 部署為 Web App：
  *    - 執行身分：我
  *    - 存取權限：任何人
- * 6. 複製 Web App URL 到前端配置檔案中
- * 
+ * 7. 複製 Web App URL 到前端配置檔案中
+ *
  * 家庭系統使用方式：
  * 1. 在 familyGroups 工作表中設定家庭關係
  * 2. 前端報到時會自動查詢家庭資訊
  * 3. 支援批量報到功能
+ *
+ * 權限系統使用方式：
+ * 1. 在 staffList 工作表中設定工作人員權限
+ * 2. 欄位：email, role, name, status, lastLogin, createdDate, notes
+ * 3. role 可設定為 'admin' 或 'staff'
+ * 4. status 設定為 'active' 才能登入
  */

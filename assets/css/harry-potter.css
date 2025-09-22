@@ -1,0 +1,497 @@
+/**
+ * 🧙‍♂️ 霍格華茲婚禮系統 - 哈利波特主題樣式
+ * Harry Potter Theme for Wedding Guest System
+ *
+ * 設計理念：
+ * - 深紅色 (#722f37) + 金黃色 (#d4af37) 為主色調
+ * - 羊皮紙質感背景
+ * - 哥德式風格與魔法元素
+ * - 保持良好的可讀性與使用性
+ */
+
+:root {
+    /* 🎨 簡潔三色配色方案 */
+    --hp-parchment: #f3e9d8;          /* 羊皮紙色 - 主色調 */
+    --hp-brown: #8b4513;              /* 深棕色 - 文字和邊框 */
+    --hp-white: #ffffff;              /* 純白底色 */
+
+    /* 🎯 向後相容的舊變數映射 */
+    --primary-color: var(--hp-brown);
+    --secondary-color: var(--hp-parchment);
+    --text-color: var(--hp-brown);
+    --background-color: var(--hp-white);
+    --accent-color: var(--hp-parchment);
+    --subtle-border: var(--hp-brown);
+
+    /* 🔧 功能性顏色 */
+    --checked-in-bg: #e8f5e8;
+    --unchecked-bg: #ffffff;
+    --checked-in-text: #2e7d32;
+    --unchecked-text: var(--hp-brown);
+
+    /* 📐 尺寸與間距 */
+    --border-radius-sm: 8px;
+    --border-radius-md: 12px;
+    --border-radius-lg: 16px;
+    --shadow-sm: 0 2px 8px rgba(139, 69, 19, 0.1);
+    --shadow-md: 0 4px 16px rgba(139, 69, 19, 0.15);
+    --shadow-lg: 0 8px 32px rgba(139, 69, 19, 0.2);
+
+    /* ✨ 動畫參數 */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+}
+
+/* 🏗️ 基礎佈局 */
+body {
+    font-family: 'Newsreader', 'Noto Sans', sans-serif;
+    background: var(--hp-white);
+    color: var(--hp-brown);
+    line-height: 1.6;
+}
+
+/* 📱 響應式容器 */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+@media (min-width: 768px) {
+    .container {
+        padding: 0 2rem;
+    }
+}
+
+/* 🏰 魔法標題區域 */
+.magical-header {
+    background: var(--hp-parchment);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    border-bottom: 3px solid var(--hp-brown);
+}
+
+.magical-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--hp-golden) 0%, var(--hp-bronze) 50%, var(--hp-golden) 100%);
+}
+
+.hogwarts-title {
+    color: var(--hp-brown);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    font-weight: 800;
+    letter-spacing: 0.05em;
+}
+
+/* 🃏 魔法卡片系統 */
+.magic-card {
+    background: var(--hp-white);
+    border: 2px solid var(--hp-brown);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.magic-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--hp-parchment);
+}
+
+.magic-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    background: var(--hp-parchment);
+}
+
+/* 🔘 魔法按鈕系統 */
+.btn-hogwarts {
+    background: var(--hp-parchment);
+    color: var(--hp-brown);
+    font-weight: bold;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-md);
+    border: 2px solid var(--hp-brown);
+    transition: all var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-hogwarts:hover {
+    background: var(--hp-brown);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    color: var(--hp-white);
+}
+
+.btn-hogwarts:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-ministry {
+    background: var(--hp-white);
+    color: var(--hp-brown);
+    font-weight: bold;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-md);
+    border: 2px solid var(--hp-brown);
+    transition: all var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.btn-ministry:hover {
+    background: var(--hp-parchment);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    color: var(--hp-brown);
+}
+
+/* 📊 表格魔法化 */
+.magic-table {
+    background: var(--hp-white);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    border: 2px solid var(--hp-brown);
+}
+
+.table-header {
+    background: var(--hp-parchment);
+    color: var(--hp-brown);
+    font-weight: 700;
+    padding: 1rem 1.5rem;
+    text-align: left;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: relative;
+}
+
+.table-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--hp-brown);
+}
+
+.table-cell {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(139, 69, 19, 0.2);
+    transition: background-color var(--transition-fast);
+}
+
+/* 🔮 魔法複選框 */
+.checkbox-magical {
+    appearance: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid var(--hp-brown);
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    transition: all var(--transition-fast);
+    background: var(--hp-white);
+}
+
+.checkbox-magical:checked {
+    background: var(--hp-parchment);
+    border-color: var(--hp-brown);
+}
+
+.checkbox-magical:checked::after {
+    content: "✔";
+    color: var(--hp-brown);
+    font-size: 0.8rem;
+    font-weight: bold;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.checkbox-magical:hover {
+    border-color: var(--hp-brown);
+    box-shadow: 0 0 8px rgba(243, 233, 216, 0.5);
+    background: var(--hp-parchment);
+}
+
+/* 📝 魔法輸入框 */
+.input-magical {
+    border: 2px solid var(--hp-brown);
+    border-radius: var(--border-radius-sm);
+    padding: 0.75rem 1rem;
+    background: var(--hp-white);
+    color: var(--hp-brown);
+    font-family: inherit;
+    transition: all var(--transition-fast);
+    width: 100%;
+}
+
+.input-magical:focus {
+    outline: none;
+    border-color: var(--hp-brown);
+    box-shadow: 0 0 12px rgba(243, 233, 216, 0.5);
+    background: var(--hp-parchment);
+}
+
+.input-magical::placeholder {
+    color: rgba(139, 69, 19, 0.6);
+}
+
+/* 🎭 狀態指示器 */
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--hp-parchment);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid var(--hp-brown);
+    font-size: 0.9rem;
+    color: var(--hp-brown);
+}
+
+/* 🎪 家庭群組樣式增強 */
+.family-group-first {
+    border-left: 4px solid var(--hp-parchment);
+    border-top: 2px solid var(--hp-parchment);
+    border-right: 2px solid var(--hp-parchment);
+    border-radius: 12px 12px 0 0;
+    background: rgba(243, 233, 216, 0.3);
+}
+
+.family-group-middle {
+    border-left: 4px solid var(--hp-parchment);
+    border-right: 2px solid var(--hp-parchment);
+    background: rgba(243, 233, 216, 0.3);
+}
+
+.family-group-last {
+    border-left: 4px solid var(--hp-parchment);
+    border-bottom: 2px solid var(--hp-parchment);
+    border-right: 2px solid var(--hp-parchment);
+    border-radius: 0 0 12px 12px;
+    background: rgba(243, 233, 216, 0.3);
+}
+
+.family-group-single {
+    border: 2px solid var(--hp-parchment);
+    border-left: 4px solid var(--hp-parchment);
+    border-radius: 12px;
+    background: rgba(243, 233, 216, 0.3);
+}
+
+/* 家庭群組已報到樣式 */
+.family-group-first.checked-in-row,
+.family-group-middle.checked-in-row,
+.family-group-last.checked-in-row,
+.family-group-single.checked-in-row {
+    background: linear-gradient(90deg, rgba(156, 175, 136, 0.2) 0%, rgba(156, 175, 136, 0.1) 100%);
+    border-color: var(--hp-sage-green);
+    color: #1b5e20;
+}
+
+/* 家庭編號標記增強 */
+.family-group-first .table-cell:first-child::after,
+.family-group-single .table-cell:first-child::after {
+    content: "👪";
+    position: absolute;
+    margin-left: 8px;
+    font-size: 14px;
+    opacity: 0.8;
+    filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.1));
+}
+
+/* 🌟 魔法動畫效果 */
+.magic-sparkle {
+    animation: sparkle 2s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+    0%, 100% {
+        opacity: 0.7;
+        transform: scale(1) rotate(0deg);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.1) rotate(5deg);
+    }
+}
+
+.magical-pulse {
+    animation: magical-pulse 3s ease-in-out infinite;
+}
+
+@keyframes magical-pulse {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(243, 233, 216, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(243, 233, 216, 0.8);
+    }
+}
+
+/* 🌈 魔法分隔線 */
+.magical-divider {
+    height: 3px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        var(--hp-parchment) 20%,
+        var(--hp-brown) 50%,
+        var(--hp-parchment) 80%,
+        transparent 100%);
+    margin: 2rem 0;
+    border-radius: 2px;
+}
+
+/* 🚨 警告與訊息樣式 */
+.alert-magical {
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius-md);
+    border-left: 4px solid;
+    margin: 1rem 0;
+    position: relative;
+}
+
+.alert-success {
+    background: rgba(156, 175, 136, 0.1);
+    border-color: var(--hp-sage-green);
+    color: #1b5e20;
+}
+
+.alert-warning {
+    background: rgba(212, 175, 55, 0.1);
+    border-color: var(--hp-golden);
+    color: var(--hp-dark-brown);
+}
+
+.alert-error {
+    background: rgba(114, 47, 55, 0.1);
+    border-color: var(--hp-deep-red);
+    color: var(--hp-deep-red);
+}
+
+/* 📱 響應式優化 */
+@media (max-width: 768px) {
+    .btn-hogwarts,
+    .btn-ministry {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+
+    .table-cell {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .magic-card {
+        margin: 1rem 0;
+    }
+
+    .magical-header {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .btn-hogwarts,
+    .btn-ministry {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    .table-cell {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* 🔧 實用工具類別 */
+.text-magical {
+    background: linear-gradient(135deg, var(--hp-deep-red), var(--hp-golden));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: bold;
+}
+
+.border-magical {
+    border: 2px solid var(--hp-golden);
+    border-radius: var(--border-radius-md);
+}
+
+.shadow-magical {
+    box-shadow: var(--shadow-md);
+}
+
+.gradient-magical {
+    background: linear-gradient(135deg, var(--hp-deep-red) 0%, #8b3a42 100%);
+}
+
+/* 🎯 向下相容性：保持原有類別名稱 */
+.checkbox-custom {
+    @extend .checkbox-magical;
+}
+
+.btn-primary {
+    @extend .btn-hogwarts;
+}
+
+/* 🌟 特殊效果：魔法粒子 (CSS only) */
+.magic-particles::before {
+    content: "✨";
+    position: absolute;
+    top: 10%;
+    left: 10%;
+    font-size: 12px;
+    opacity: 0.6;
+    animation: float 4s ease-in-out infinite;
+    animation-delay: 0s;
+}
+
+.magic-particles::after {
+    content: "⭐";
+    position: absolute;
+    top: 20%;
+    right: 15%;
+    font-size: 10px;
+    opacity: 0.5;
+    animation: float 3s ease-in-out infinite;
+    animation-delay: 1s;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+        opacity: 0.5;
+    }
+    50% {
+        transform: translateY(-10px) rotate(180deg);
+        opacity: 0.8;
+    }
+}
