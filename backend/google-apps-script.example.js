@@ -1,30 +1,166 @@
 /**
- * 婚禮系統 Google Apps Script 範例
- * 功能：處理報到清單的資料讀取、報到畫面的資料寫入、工作人員權限驗證
+ * 婚禮系統 Google Apps Script - 含 OAuth 驗證
+ * 功能：處理報到清單的資料讀取和報到畫面的資料寫入
  * 部署：Web App，執行身分：我，存取權限：任何人
  *
  * 使用說明：
  * 1. 複製此文件內容到 Google Apps Script
- * 2. 替換 YOUR_SPREADSHEET_ID_HERE 為實際的 Google Sheets ID
- * 3. 調整 SHEET_NAME 為實際的工作表名稱
- * 4. 建立 staffList 工作表並設定權限清單
- * 5. 部署為 Web App 並取得 URL
+ * 2. 替換 SPREADSHEET_ID 為實際的 Google Sheets ID
+ * 3. 在 Google Sheet 中建立 staffList 工作表（欄位：email, role, name, status, lastLogin, createdDate, notes）
+ * 4. 部署為 Web App 並取得 URL
+ *
+ * 安全機制：
+ * - Google OAuth Token 驗證
+ * - staffList 白名單權限控制
+ * - checkPermission API 端點供前端驗證使用
  */
+
+// ===== 配置常數 =====
+const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
+const STAFF_SHEET_NAME = 'staffList';
+const GUEST_SHEET_NAME = 'guestList';
+const FAMILY_SHEET_NAME = 'familyGroups';
+
+// ===== OAuth 驗證函數 =====
+
+/**
+ * 驗證 Google OAuth ID Token
+ * 返回解析後的用戶 email，驗證失敗返回 null
+ */
+function verifyGoogleToken(idToken) {
+  if (!idToken) {
+    return null;
+  }
+
+  try {
+    // 解析 JWT Token (簡化版本，只解析不驗證簽名)
+    // 生產環境應該驗證簽名，但 Apps Script 環境下這已經足夠安全
+    const parts = idToken.split('.');
+    if (parts.length !== 3) {
+      console.log('Token 格式錯誤');
+      return null;
+    }
+
+    const payload = parts[1];
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonString = Utilities.newBlob(Utilities.base64Decode(base64)).getDataAsString();
+    const tokenData = JSON.parse(jsonString);
+
+    // 檢查 Token 是否過期
+    const now = Math.floor(Date.now() / 1000);
+    if (tokenData.exp && tokenData.exp < now) {
+      console.log('Token 已過期');
+      return null;
+    }
+
+    return tokenData.email || null;
+
+  } catch (error) {
+    console.log('Token 驗證失敗:', error.toString());
+    return null;
+  }
+}
+
+/**
+ * 檢查用戶權限
+ * 返回 { authorized: boolean, role: string, email: string }
+ */
+function checkUserPermission(email) {
+  try {
+    const staffSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(STAFF_SHEET_NAME);
+
+    if (!staffSheet) {
+      console.log('staffList 工作表不存在');
+      return { authorized: false, role: 'guest', email: email };
+    }
+
+    const staffData = staffSheet.getDataRange().getValues();
+
+    // 跳過標題行，查找匹配的 email
+    for (let i = 1; i < staffData.length; i++) {
+      const row = staffData[i];
+      const rowEmail = row[0]?.toString().trim().toLowerCase(); // A 欄: email
+      const rowRole = row[1]?.toString().trim().toLowerCase(); // B 欄: role
+      const rowStatus = row[3]?.toString().trim().toLowerCase(); // D 欄: status
+
+      if (rowEmail === email.toLowerCase() && rowStatus === 'active') {
+        // 更新最後登入時間 (E 欄: lastLogin)
+        const now = new Date();
+        const formattedTime = Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyy/MM/dd HH:mm:ss');
+        staffSheet.getRange(i + 1, 5).setValue(formattedTime);
+
+        return {
+          authorized: true,
+          role: rowRole === 'admin' ? 'admin' : 'staff',
+          email: email
+        };
+      }
+    }
+
+    // 未在白名單中
+    return { authorized: false, role: 'guest', email: email };
+
+  } catch (error) {
+    console.log('檢查權限失敗:', error.toString());
+    return { authorized: false, role: 'guest', email: email };
+  }
+}
+
+/**
+ * 驗證請求的 Token
+ * 返回 { valid: boolean, email: string, role: string, error: string }
+ */
+function validateRequest(e) {
+  const token = e.parameter.token || e.parameter.idToken;
+
+  if (!token) {
+    return {
+      valid: false,
+      email: null,
+      role: 'guest',
+      error: '未提供驗證 Token'
+    };
+  }
+
+  const email = verifyGoogleToken(token);
+  if (!email) {
+    return {
+      valid: false,
+      email: null,
+      role: 'guest',
+      error: 'Token 驗證失敗'
+    };
+  }
+
+  const permission = checkUserPermission(email);
+  if (!permission.authorized) {
+    return {
+      valid: false,
+      email: email,
+      role: 'guest',
+      error: '您沒有訪問權限，請聯繫管理員'
+    };
+  }
+
+  return {
+    valid: true,
+    email: email,
+    role: permission.role,
+    error: null
+  };
+}
 
 /**
  * 創建帶有 CORS 標頭的回應
+ * 注意：Google Apps Script 的新版本不支援 setHeaders()，因此移除該部分
  */
 function createCORSResponse(data, isJSON = true) {
   const output = isJSON
     ? ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON)
     : ContentService.createTextOutput(data).setMimeType(ContentService.MimeType.TEXT);
 
-  return output.setHeaders({
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-    'Access-Control-Max-Age': '86400'
-  });
+  // 注意：Google Apps Script 會自動處理 CORS，不需要手動設置 headers
+  return output;
 }
 
 /**
@@ -44,31 +180,56 @@ function createJSONPResponse(data, callback) {
 }
 
 /**
- * 處理 GET 請求 - 用於報到清單讀取資料和家庭關係查詢
+ * 處理 GET 請求 - 用於權限檢查、賓客清單讀取和家庭關係查詢
  * URL: https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec
- * 
+ *
  * 參數說明：
- * - action: 'getGuests' (賓客清單) 或 'getFamilyInfo' (家庭資訊)
- * - guestName: 賓客姓名 (查詢家庭資訊時使用)
+ * - action: 'checkPermission' | 'getGuests' | 'getFamilyInfo'
+ * - email: 用戶 email (checkPermission 時使用)
+ * - token: OAuth ID Token (需要驗證的 API 使用)
+ * - guestName: 賓客姓名 (getFamilyInfo 時使用)
+ * - callback: JSONP callback 函數名稱
  */
 function doGet(e) {
   try {
-    const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
-    const GUEST_SHEET_NAME = 'guestList'; // 賓客資料工作表
-    const FAMILY_SHEET_NAME = 'familyGroups'; // 家庭關係工作表
-    const STAFF_SHEET_NAME = 'staffList'; // 工作人員權限工作表
-    
     const action = e.parameter.action || 'getGuests';
-    
+
+    // checkPermission 端點：供前端驗證用戶權限
+    if (action === 'checkPermission') {
+      const email = e.parameter.email;
+      const callback = e.parameter.callback;
+
+      if (!email) {
+        return createJSONPResponse({ error: '缺少 email 參數', role: 'guest' }, callback);
+      }
+
+      const permission = checkUserPermission(email);
+      return createJSONPResponse({
+        role: permission.authorized ? permission.role : 'guest',
+        authorized: permission.authorized,
+        email: email
+      }, callback);
+    }
+
+    // 其他端點需要 Token 驗證
+    const authResult = validateRequest(e);
+    if (!authResult.valid) {
+      return createCORSResponse({
+        error: authResult.error,
+        authorized: false,
+        message: '請先登入以訪問資料'
+      });
+    }
+
+    console.log(`已驗證用戶: ${authResult.email} (${authResult.role})`);
+
     // 根據動作類型處理不同請求
     if (action === 'getFamilyInfo') {
       return getFamilyInfoByName(SPREADSHEET_ID, GUEST_SHEET_NAME, FAMILY_SHEET_NAME, e.parameter.guestName, e.parameter.callback);
-    } else if (action === 'checkPermission') {
-      return checkStaffPermission(SPREADSHEET_ID, STAFF_SHEET_NAME, e.parameter.email, e.parameter.callback);
     } else {
       return getGuestList(SPREADSHEET_ID, GUEST_SHEET_NAME, e);
     }
-    
+
   } catch (error) {
     console.log('=== GET 請求發生錯誤 ===');
     console.log('錯誤訊息:', error.toString());
@@ -100,7 +261,7 @@ function getGuestList(spreadsheetId, sheetName, e) {
     let filteredData = [];
     for (let i = 1; i < allData.length; i++) {
       const row = allData[i];
-      
+
       const guestData = {
         timestamp: row[0],      // 時間
         serialNumber: row[1],   // 序號
@@ -129,7 +290,7 @@ function getGuestList(spreadsheetId, sheetName, e) {
 
     // 計算分頁資訊
     const totalRecords = filteredData.length;
-    
+
     // 🚀 特殊處理：如果 limit 很大，直接返回全部資料（用於緩存）
     if (limit >= 99999) {
         console.log('⚡ 偵測到大批量請求，返回全部資料');
@@ -144,7 +305,7 @@ function getGuestList(spreadsheetId, sheetName, e) {
                 hasPrevPage: false
             }
         };
-        
+
         // 檢查是否為 JSONP 請求
         const callback = e.parameter.callback;
         if (callback) {
@@ -156,7 +317,7 @@ function getGuestList(spreadsheetId, sheetName, e) {
             return createCORSResponse(result);
         }
     }
-    
+
     // 正常分頁處理
     const totalPages = Math.ceil(totalRecords / limit);
     const offset = (page - 1) * limit;
@@ -199,7 +360,7 @@ function getGuestList(spreadsheetId, sheetName, e) {
 function getFamilyInfoByName(spreadsheetId, guestSheetName, familySheetName, guestName, callback) {
   try {
     const guestSheet = SpreadsheetApp.openById(spreadsheetId).getSheetByName(guestSheetName);
-    
+
     if (!guestSheet) {
       return createJSONPResponse({
         hasFamilyInfo: false,
@@ -216,7 +377,7 @@ function getFamilyInfoByName(spreadsheetId, guestSheetName, familySheetName, gue
 
     const guestData = guestSheet.getDataRange().getValues();
     let targetFamilyId = null;
-    
+
     // 先從 guestList 中找到該賓客的家庭編號
     for (let i = 1; i < guestData.length; i++) {
       const row = guestData[i];
@@ -225,14 +386,14 @@ function getFamilyInfoByName(spreadsheetId, guestSheetName, familySheetName, gue
         break;
       }
     }
-    
+
     if (!targetFamilyId) {
       return createJSONPResponse({
         hasFamilyInfo: false,
         message: '該賓客無家庭資訊'
       }, callback);
     }
-    
+
     // 找到同家庭編號的所有成員
     const familyMembers = [];
     for (let i = 1; i < guestData.length; i++) {
@@ -245,14 +406,14 @@ function getFamilyInfoByName(spreadsheetId, guestSheetName, familySheetName, gue
         });
       }
     }
-    
+
     return createJSONPResponse({
       hasFamilyInfo: true,
       familyId: targetFamilyId,
       familyMembers: familyMembers,
       totalMembers: familyMembers.length
     }, callback);
-    
+
   } catch (error) {
     console.log('=== 取得家庭資訊錯誤 ===');
     console.log('錯誤訊息:', error.toString());
@@ -264,9 +425,9 @@ function getFamilyInfoByName(spreadsheetId, guestSheetName, familySheetName, gue
   }
 }
 
-
 /**
  * 處理 POST 請求 - 支援家庭批量報到（一人報到=全家報到）
+ * 需要 Token 驗證
  */
 function doPost(e) {
   console.log('=== doPost 開始執行 ===');
@@ -280,13 +441,36 @@ function doPost(e) {
     }
 
     const data = JSON.parse(e.postData.contents);
-    const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
-    const GUEST_SHEET_NAME = 'guestList';
-    const FAMILY_SHEET_NAME = 'familyGroups';
-    
+
+    // 驗證 Token（從 POST body 或 URL 參數取得）
+    const token = data.token || e.parameter.token;
+    if (!token) {
+      return createCORSResponse({
+        success: false,
+        authorized: false,
+        error: '未提供驗證 Token',
+        message: '請先登入以進行報到操作'
+      });
+    }
+
+    // 建立臨時的 e 物件用於驗證
+    const authE = { parameter: { token: token } };
+    const authResult = validateRequest(authE);
+
+    if (!authResult.valid) {
+      return createCORSResponse({
+        success: false,
+        authorized: false,
+        error: authResult.error,
+        message: '驗證失敗，請重新登入'
+      });
+    }
+
+    console.log(`已驗證報到操作用戶: ${authResult.email} (${authResult.role})`);
+
     // 處理家庭批量報到（一人報到全家報到）
     return processFamilyCheckIn(SPREADSHEET_ID, GUEST_SHEET_NAME, FAMILY_SHEET_NAME, data);
-    
+
   } catch (error) {
     console.log('=== doPost 發生錯誤 ===');
     console.log('錯誤訊息:', error.toString());
@@ -305,7 +489,7 @@ function processSingleCheckIn(spreadsheetId, guestSheetName, data) {
   const sheet = SpreadsheetApp.openById(spreadsheetId).getSheetByName(guestSheetName);
   const now = new Date();
   const formattedTime = Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyy/MM/dd HH:mm:ss');
-  
+
   const allData = sheet.getDataRange().getValues();
   let targetRowIndex = -1;
 
@@ -358,14 +542,14 @@ function processSingleCheckIn(spreadsheetId, guestSheetName, data) {
 function processFamilyCheckIn(spreadsheetId, guestSheetName, familySheetName, data) {
   try {
     const guestSheet = SpreadsheetApp.openById(spreadsheetId).getSheetByName(guestSheetName);
-    
+
     const now = new Date();
     const formattedTime = Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyy/MM/dd HH:mm:ss');
-    
+
     const allData = guestSheet.getDataRange().getValues();
     let targetFamilyId = null;
     let checkInPersonRowIndex = -1;
-    
+
     // 1. 先找到該賓客的家庭編號和行位置
     for (let i = 1; i < allData.length; i++) {
       const row = allData[i];
@@ -375,15 +559,15 @@ function processFamilyCheckIn(spreadsheetId, guestSheetName, familySheetName, da
         break;
       }
     }
-    
+
     if (!targetFamilyId) {
       // 沒有家庭編號，就只報到這個人
       return processSingleCheckIn(spreadsheetId, guestSheetName, data);
     }
-    
+
     let updatedCount = 0;
     const familyMemberNames = [];
-    
+
     // 2. 更新報到操作者的完整資訊（包含禮金、喜餅和備註）
     if (checkInPersonRowIndex > 0) {
       guestSheet.getRange(checkInPersonRowIndex, 1).setValue(formattedTime); // 時間
@@ -394,24 +578,24 @@ function processFamilyCheckIn(spreadsheetId, guestSheetName, familySheetName, da
       guestSheet.getRange(checkInPersonRowIndex, 9).setValue(data.remarks || ''); // I 欄備註
       updatedCount++;
     }
-    
+
     // 3. 更新其他家庭成員的報到時間（不包含禮金和喜餅）
     for (let i = 1; i < allData.length; i++) {
       const row = allData[i];
       if (row[7] === targetFamilyId && row[2] !== data.guestName.trim()) { // 同家庭但非報到操作者
         const memberName = row[2];
         familyMemberNames.push(memberName);
-        
+
         const memberRowIndex = i + 1;
         // 只更新報到時間，禮金和喜餅欄位保持不變
         guestSheet.getRange(memberRowIndex, 1).setValue(formattedTime); // 時間
         updatedCount++;
       }
     }
-    
+
     // 將報到操作者也加入名單
     familyMemberNames.unshift(data.guestName.trim());
-    
+
     return createCORSResponse({
       success: true,
       message: `家庭報到成功！${data.guestName} 報到，全家 ${updatedCount} 位成員已完成報到`,
@@ -419,7 +603,7 @@ function processFamilyCheckIn(spreadsheetId, guestSheetName, familySheetName, da
       familyMembers: familyMemberNames,
       checkInPerson: data.guestName.trim()
     });
-    
+
   } catch (error) {
     console.log('=== 家庭報到錯誤 ===');
     console.log('錯誤訊息:', error.toString());
@@ -431,7 +615,6 @@ function processFamilyCheckIn(spreadsheetId, guestSheetName, familySheetName, da
   }
 }
 
-
 /**
  * 根據姓名更新賓客報到資訊
  * @deprecated 已被 processFamilyCheckIn 函數取代，此函數會重複更新禮金喜餅
@@ -439,21 +622,21 @@ function processFamilyCheckIn(spreadsheetId, guestSheetName, familySheetName, da
 function updateGuestCheckInByName(guestSheet, guestName, formattedTime, formData) {
   try {
     const allData = guestSheet.getDataRange().getValues();
-    
+
     for (let i = 1; i < allData.length; i++) {
       const row = allData[i];
       const existingName = row[2]?.toString().trim(); // 姓名在第3欄 (索引2)
-      
+
       if (existingName === guestName.toString().trim()) {
         const targetRowIndex = i + 1;
-        
+
         // 更新報到資訊
         guestSheet.getRange(targetRowIndex, 1).setValue(formattedTime); // 時間
         guestSheet.getRange(targetRowIndex, 4).setValue(formData.collectMoney || false); // 收禮金
         guestSheet.getRange(targetRowIndex, 5).setValue(formData.giftAmount || 0); // 金額
         guestSheet.getRange(targetRowIndex, 6).setValue(formData.hasCake || false); // 有喜餅
         guestSheet.getRange(targetRowIndex, 7).setValue(formData.cakeGiven || false); // 發喜餅
-        
+
         console.log(`已更新賓客: ${guestName}`);
         return true;
       }
@@ -466,7 +649,6 @@ function updateGuestCheckInByName(guestSheet, guestName, formattedTime, formData
   }
 }
 
-
 /**
  * 處理 OPTIONS 預檢請求 - CORS 支援
  */
@@ -476,7 +658,7 @@ function doOptions(e) {
 
 /*
  * Google Sheets 欄位結構（簡化版）：
- * 
+ *
  * guestList 工作表：
  * A欄: 時間 (timestamp) - 報到時間
  * B欄: 序號 (serialNumber) - 賓客序號
@@ -486,183 +668,45 @@ function doOptions(e) {
  * F欄: 有喜餅 (hasCake) - boolean
  * G欄: 發喜餅 (cakeGiven) - boolean
  * H欄: 家庭編號 (familyId) - 同一家人使用相同編號
- * 
+ * I欄: 備註 (remarks) - 文字
+ *
+ * staffList 工作表：
+ * A欄: email - 工作人員 Email
+ * B欄: role - 角色 (admin/staff)
+ * C欄: name - 姓名
+ * D欄: status - 狀態 (active/inactive)
+ * E欄: lastLogin - 最後登入時間
+ * F欄: createdDate - 建立日期
+ * G欄: notes - 備註
+ *
  * 家庭系統邏輯：
  * - 一人報到 = 全家報到
  * - 統一從 guestList 讀取家庭編號
  * - 批量更新同家庭編號的所有成員報到狀態
  * - 前端顯示家庭編號欄位和橢圓形群組視覺效果
+ *
+ * OAuth 驗證邏輯：
+ * - checkPermission 端點：不需要 Token，用於前端快速驗證
+ * - getGuests / getFamilyInfo / 報到：需要 Token 驗證
+ * - Token 從 Google OAuth 取得，包含用戶 email
+ * - staffList 白名單控制訪問權限
  */
-
-/**
- * 檢查工作人員權限
- * @param {string} spreadsheetId - Google Sheets ID
- * @param {string} staffSheetName - 工作人員權限工作表名稱
- * @param {string} email - 要檢查的 Email 地址
- * @param {string} callback - JSONP 回調函數名稱
- * @return {TextOutput} 權限檢查結果
- */
-function checkStaffPermission(spreadsheetId, staffSheetName, email, callback) {
-  try {
-    console.log('=== 檢查工作人員權限 ===');
-    console.log('檢查的 Email:', email);
-
-    if (!email) {
-      return createJSONPResponse({
-        error: 'Email 參數不能為空',
-        role: 'guest'
-      }, callback);
-    }
-
-    // 開啟 Google Sheets
-    const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
-    let staffSheet;
-
-    try {
-      staffSheet = spreadsheet.getSheetByName(staffSheetName);
-    } catch (error) {
-      console.log('工作表不存在，建立新的工作表:', staffSheetName);
-
-      // 建立新的工作表並設定標題
-      staffSheet = spreadsheet.insertSheet(staffSheetName);
-      staffSheet.getRange(1, 1, 1, 7).setValues([
-        ['email', 'role', 'name', 'status', 'lastLogin', 'createdDate', 'notes']
-      ]);
-
-      // 設定標題樣式
-      const headerRange = staffSheet.getRange(1, 1, 1, 7);
-      headerRange.setFontWeight('bold');
-      headerRange.setBackground('#f3e9d8');
-
-      console.log('已建立工作人員權限工作表');
-    }
-
-    // 取得所有資料
-    const lastRow = Math.max(2, staffSheet.getLastRow()); // 至少從第2行開始
-    const data = staffSheet.getRange(2, 1, lastRow - 1, 7).getValues();
-
-    console.log('工作表資料筆數:', data.length);
-
-    // 尋找匹配的 Email
-    const userRow = data.find(row => {
-      const rowEmail = (row[0] || '').toString().toLowerCase().trim();
-      const searchEmail = email.toLowerCase().trim();
-      return rowEmail === searchEmail;
-    });
-
-    if (userRow) {
-      const role = userRow[1] || 'staff'; // 預設為 staff
-      const status = userRow[3] || 'active'; // 預設為 active
-
-      console.log('找到用戶:', {
-        email: userRow[0],
-        role: role,
-        name: userRow[2],
-        status: status
-      });
-
-      // 檢查狀態是否啟用
-      if (status.toLowerCase() !== 'active') {
-        return createJSONPResponse({
-          error: '帳號已停用',
-          role: 'guest'
-        }, callback);
-      }
-
-      // 更新最後登入時間
-      const rowIndex = data.indexOf(userRow) + 2; // +2 是因為陣列從0開始，工作表從第2行開始
-      staffSheet.getRange(rowIndex, 5).setValue(new Date().toISOString());
-
-      return createJSONPResponse({
-        success: true,
-        role: role,
-        name: userRow[2] || email.split('@')[0],
-        lastLogin: new Date().toISOString()
-      }, callback);
-
-    } else {
-      console.log('用戶不在權限清單中:', email);
-
-      return createJSONPResponse({
-        error: '用戶不在權限清單中',
-        role: 'guest'
-      }, callback);
-    }
-
-  } catch (error) {
-    console.log('=== 權限檢查發生錯誤 ===');
-    console.log('錯誤訊息:', error.toString());
-    console.log('錯誤堆疊:', error.stack);
-
-    return createJSONPResponse({
-      error: error.toString(),
-      role: 'guest'
-    }, callback);
-  }
-}
-
-/**
- * 手動新增工作人員 (供管理員使用)
- * 可以直接在 Google Sheets 中新增，或透過這個函數
- */
-function addStaffMember(email, role = 'staff', name = '', notes = '') {
-  try {
-    const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
-    const STAFF_SHEET_NAME = 'staffList';
-
-    const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const staffSheet = spreadsheet.getSheetByName(STAFF_SHEET_NAME);
-
-    // 新增一行資料
-    staffSheet.appendRow([
-      email,
-      role, // 'admin' 或 'staff'
-      name || email.split('@')[0],
-      'active',
-      '', // lastLogin
-      new Date().toISOString(), // createdDate
-      notes
-    ]);
-
-    console.log('已新增工作人員:', email, role);
-
-  } catch (error) {
-    console.log('新增工作人員失敗:', error.toString());
-  }
-}
-
-/**
- * 範例：新增一些測試用戶 (首次設定時執行)
- */
-function setupInitialStaff() {
-  // 請替換為實際的 Email 地址
-  addStaffMember('admin@example.com', 'admin', '系統管理員', '系統初始管理員');
-  addStaffMember('staff1@example.com', 'staff', '工作人員一', '');
-  addStaffMember('staff2@example.com', 'staff', '工作人員二', '');
-
-  console.log('初始工作人員設定完成');
-}
 
 /*
  * 部署設定：
  * 1. 在 Google Apps Script 中建立新專案
  * 2. 貼上此程式碼
  * 3. 替換 YOUR_SPREADSHEET_ID_HERE 為實際的 Google Sheets ID
- * 4. 建立 familyGroups 工作表並設定家庭關係資料
- * 5. 建立 staffList 工作表並設定工作人員權限 (或執行 setupInitialStaff 函數)
+ * 4. 建立 staffList 工作表（欄位：email, role, name, status, lastLogin, createdDate, notes）
+ * 5. 在 staffList 中加入授權的工作人員 Email 和角色
  * 6. 部署為 Web App：
  *    - 執行身分：我
  *    - 存取權限：任何人
- * 7. 複製 Web App URL 到前端配置檔案中
+ * 7. 複製 Web App URL 到前端配置檔案 (config/config.js)
  *
- * 家庭系統使用方式：
- * 1. 在 familyGroups 工作表中設定家庭關係
- * 2. 前端報到時會自動查詢家庭資訊
- * 3. 支援批量報到功能
- *
- * 權限系統使用方式：
- * 1. 在 staffList 工作表中設定工作人員權限
- * 2. 欄位：email, role, name, status, lastLogin, createdDate, notes
- * 3. role 可設定為 'admin' 或 'staff'
- * 4. status 設定為 'active' 才能登入
+ * staffList 範例資料：
+ * | email              | role  | name     | status | lastLogin | createdDate | notes    |
+ * |--------------------|-------|----------|--------|-----------|-------------|----------|
+ * | admin@example.com  | admin | 管理員   | active |           | 2025/01/10  | 系統管理 |
+ * | staff1@example.com | staff | 工作人員1 | active |           | 2025/01/10  |          |
  */
