@@ -230,6 +230,15 @@
 <span class="magic-wand-icon text-lg">auto_fix_high</span> Check-in Successful
                             </button>
 </div>
+
+<div id="curl-helper" class="hidden mt-8 border border-dashed border-[var(--hp-golden)] rounded-lg bg-[#fffaf0] p-4">
+  <div class="flex items-center gap-2 text-[var(--hp-brown)] mb-2">
+    <span class="material-symbols-outlined text-lg">terminal</span>
+    <span class="text-sm font-semibold">Debug 用 curl 指令（可貼到終端機直接測試）</span>
+  </div>
+  <p class="text-xs text-[var(--text-color)] opacity-80 mb-3">提示：請先確認 Google Apps Script 部署版本為最新，並將以下指令貼到本機終端機執行。</p>
+  <pre id="curl-command-output" class="text-xs bg-white border border-[var(--subtle-border)] rounded-md p-3 overflow-x-auto font-mono leading-relaxed"></pre>
+</div>
 </form>
 </div>
 </div>
@@ -295,13 +304,15 @@
 
         const collectMoneyCheckbox = document.getElementById('collect-money');
         const giftAmountInput = document.getElementById('gift-amount');
-        const giftAmountSection = document.getElementById('gift-amount-section');
-        const form = document.querySelector('form');
+            const giftAmountSection = document.getElementById('gift-amount-section');
+            const form = document.querySelector('form');
+            const curlHelper = document.getElementById('curl-helper');
+            const curlOutput = document.getElementById('curl-command-output');
 
-        function toggleGiftAmount() {
-            if (collectMoneyCheckbox.checked) {
-                giftAmountInput.disabled = false;
-                giftAmountSection.classList.remove('opacity-50');
+            function toggleGiftAmount() {
+                if (collectMoneyCheckbox.checked) {
+                    giftAmountInput.disabled = false;
+                    giftAmountSection.classList.remove('opacity-50');
             } else {
                 giftAmountInput.disabled = true;
                 giftAmountInput.value = '';
@@ -322,18 +333,21 @@
 
             try {
                 const formData = new FormData(form);
-                const data = {
-                    serialNumber: formData.get('serial-number'),
-                    guestName: formData.get('guest-name'),
-                    collectMoney: formData.get('collect-money') === 'on',
-                    giftAmount: parseInt(formData.get('gift-amount')) || 0,
-                    hasCake: formData.get('has-cake') === 'on',
-                    cakeGiven: formData.get('cake-given') === 'on',
-                    remarks: formData.get('remarks') || ''
+                const payload = {
+                    action: 'checkIn',
+                    data: {
+                        serialNumber: formData.get('serial-number'),
+                        guestName: formData.get('guest-name'),
+                        collectMoney: formData.get('collect-money') === 'on',
+                        giftAmount: parseInt(formData.get('gift-amount')) || 0,
+                        hasCake: formData.get('has-cake') === 'on',
+                        cakeGiven: formData.get('cake-given') === 'on',
+                        remarks: formData.get('remarks') || ''
+                    }
                 };
 
                 // 調試：顯示要傳送的資料
-                console.log('準備傳送的資料:', data);
+                console.log('準備傳送的資料:', payload);
                 console.log('表單原始資料:', {
                     'serial-number': formData.get('serial-number'),
                     'guest-name': formData.get('guest-name'),
@@ -343,17 +357,31 @@
                     'cake-given': formData.get('cake-given')
                 });
 
-                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                // 產生對應的 curl 指令供除錯
+                if (curlHelper && curlOutput) {
+                    const payloadString = JSON.stringify(payload, null, 2)
+                        .replace(/'/g, "'\\''");
+                    const curlCommand = [
+                        'curl -i -X POST \\',
+                        '  -H "Content-Type: application/json" \\',
+                        `  -d '${payloadString}' \\`,
+                        `  "${GOOGLE_SCRIPT_URL}"`
+                    ].join('\n');
+                    curlOutput.textContent = curlCommand;
+                    curlHelper.classList.remove('hidden');
+                }
+
+                await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(payload)
                 });
 
                 // no-cors 模式無法讀取回應，假設提交成功
-                console.log('資料已提交 (no-cors 模式)');
+                console.log('資料已提交 (no-cors 模式)。');
 
                 // 成功提示
                 button.innerHTML = '<span class="magic-wand-icon text-lg">check_circle</span> 簽到成功！';
@@ -364,12 +392,12 @@
                     const checkInParams = new URLSearchParams({
                         refresh: Date.now(),
                         localUpdate: 'true',
-                        sn: data.serialNumber,
-                        name: encodeURIComponent(data.guestName),
-                        collectMoney: data.collectMoney || false,
-                        giftAmount: data.giftAmount || 0,
-                        hasCake: data.hasCake || false,
-                        cakeGiven: data.cakeGiven || false
+                        sn: payload.data.serialNumber,
+                        name: encodeURIComponent(payload.data.guestName),
+                        collectMoney: payload.data.collectMoney || false,
+                        giftAmount: payload.data.giftAmount || 0,
+                        hasCake: payload.data.hasCake || false,
+                        cakeGiven: payload.data.cakeGiven || false
                     });
                     window.location.href = `guestlist.html?${checkInParams.toString()}`;
                 }, 2000);
@@ -484,8 +512,7 @@
         try {
             // 調用 Google Apps Script 查詢家庭資訊
             const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=getFamilyInfo&guestName=${encodeURIComponent(guestName)}`, {
-                method: 'GET',
-                mode: 'cors'
+                method: 'GET'
             });
 
             if (!response.ok) {

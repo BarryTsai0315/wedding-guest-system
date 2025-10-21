@@ -12,75 +12,25 @@ const GUEST_SHEET_NAME = 'guestList';
 const FAMILY_SHEET_NAME = 'familyGroups';
 
 // ===== 工具函數 =====
-function verifyGoogleToken(idToken) {
-  if (!idToken) return null;
-  try {
-    const parts = idToken.split('.');
-    if (parts.length !== 3) return null;
-    const payload = parts[1];
-    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonString = Utilities.newBlob(Utilities.base64Decode(base64)).getDataAsString();
-    const tokenData = JSON.parse(jsonString);
-    const now = Math.floor(Date.now() / 1000);
-    if (tokenData.exp && tokenData.exp < now) return null;
-    return tokenData.email || null;
-  } catch (e) {
-    console.log('verifyGoogleToken error:', e.toString());
-    return null;
-  }
+function verifyGoogleToken() {
+  // OAuth 驗證已停用，此函數保留僅為相容性，直接回傳 null。
+  return null;
 }
 
 function checkUserPermission(email) {
-  try {
-    const staffSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(STAFF_SHEET_NAME);
-    if (!staffSheet) return { authorized: false, role: 'guest', email };
-    const staffData = staffSheet.getDataRange().getValues();
-    for (let i = 1; i < staffData.length; i++) {
-      const row = staffData[i];
-      const rowEmail = (row[0] || '').toString().trim().toLowerCase();
-      const rowRole = (row[1] || '').toString().trim().toLowerCase();
-      const rowStatus = (row[3] || '').toString().trim().toLowerCase();
-      if (rowEmail === (email || '').toLowerCase() && rowStatus === 'active') {
-        const now = new Date();
-        const formattedTime = Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyy/MM/dd HH:mm:ss');
-        staffSheet.getRange(i + 1, 5).setValue(formattedTime);
-        return { authorized: true, role: rowRole === 'admin' ? 'admin' : 'staff', email };
-      }
-    }
-    return { authorized: false, role: 'guest', email };
-  } catch (e) {
-    console.log('checkUserPermission error:', e.toString());
-    return { authorized: false, role: 'guest', email };
-  }
+  // 目前系統採用公開模式，一律允許訪問。
+  return { authorized: true, role: 'staff', email };
 }
 
 function validateRequest(e) {
-  let token = null;
-  try {
-    if (e.postData && e.postData.contents) {
-      const body = JSON.parse(e.postData.contents || '{}');
-      token = body.token || body.idToken || null;
-    }
-  } catch (err) {
-    // ignore
-  }
-  token = token || e.parameter.token || e.parameter.idToken || null;
-  if (!token) return { valid: false, email: null, role: 'guest', error: '未提供驗證 Token' };
-  const email = verifyGoogleToken(token);
-  if (!email) return { valid: false, email: null, role: 'guest', error: 'Token 驗證失敗' };
-  const permission = checkUserPermission(email);
-  if (!permission || !permission.authorized) return { valid: false, email, role: 'guest', error: '您沒有訪問權限' };
-  return { valid: true, email, role: permission.role };
+  // OAuth 驗證已停用，所有請求視為有效。
+  return { valid: true, email: null, role: 'staff' };
 }
 
 function createCORSResponse(data, isJSON = true) {
   const output = isJSON
     ? ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON)
     : ContentService.createTextOutput(data).setMimeType(ContentService.MimeType.TEXT);
-  output.addHeader('Access-Control-Allow-Origin', '*');
-  output.addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  output.addHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-  output.addHeader('Access-Control-Max-Age', '3600');
   return output;
 }
 
@@ -311,10 +261,6 @@ function doPost(e) {
 
 function doOptions(e) {
   const output = ContentService.createTextOutput('');
-  output.addHeader('Access-Control-Allow-Origin', '*');
-  output.addHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  output.addHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-  output.addHeader('Access-Control-Max-Age', '3600');
   output.setMimeType(ContentService.MimeType.TEXT);
   return output;
 }

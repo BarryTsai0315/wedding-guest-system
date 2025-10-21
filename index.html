@@ -228,7 +228,7 @@
             alert('🧙‍♂️ 此功能正在開發中，敬請期待魔法完成！');
         }
 
-        // OAuth 登入已整合到 auth.js 中
+        // OAuth 登入已停用，保留按鈕作為提示
 
         // 頁面載入完成後的初始化
         document.addEventListener('DOMContentLoaded', function() {
@@ -243,28 +243,8 @@
             const loginButton = document.getElementById('ministry-login');
             if (loginButton) {
                 loginButton.addEventListener('click', function() {
-                    console.log('🔐 魔法部驗證按鈕被點擊');
-
-                    // 檢查 weddingAuth 是否已初始化
-                    if (window.weddingAuth && window.weddingAuth.isInitialized) {
-                        if (window.weddingAuth.isAuthenticated()) {
-                            window.weddingAuth.signOut();
-                        } else {
-                            window.weddingAuth.signIn();
-                        }
-                    } else {
-                        console.warn('⚠️ OAuth 系統尚未初始化，請稍後再試');
-                        alert('⚠️ 系統正在初始化中，請稍後再試');
-
-                        // 3秒後重試
-                        setTimeout(() => {
-                            if (window.weddingAuth && window.weddingAuth.isInitialized) {
-                                window.weddingAuth.signIn();
-                            } else {
-                                alert('❌ 系統初始化失敗，請重新載入頁面');
-                            }
-                        }, 3000);
-                    }
+                    console.log('🔒 登入功能已停用');
+                    alert('登入功能已停用，無需驗證即可使用系統。');
                 });
 
                 console.log('✅ 魔法部驗證按鈕事件已綁定');
