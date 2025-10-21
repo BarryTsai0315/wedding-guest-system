@@ -410,7 +410,7 @@
         guestData[guestIndex] = { ...guestData[guestIndex], ...checkInUpdate, ...giftUpdate };
 
         // 家庭成員只獲得報到狀態更新，無特殊情況判斷
-        const updatedCount = familyId ? 
+        const updatedCount = familyId ?
             updateFamilyMembers(familyId, guestIndex, checkInUpdate) + 1 : 1;
 
         // 更新篩選資料和顯示
@@ -420,7 +420,6 @@
         } else {
             renderGuestTable();
         }
-
 
         // 保存更新後的資料到 localStorage
         saveCacheToStorage();
@@ -480,7 +479,6 @@
                 guestData = [];
             }
 
-
             // 🎯 簡單有效：如果有分頁就自動載入全部
             if (response.pagination && response.pagination.hasNextPage) {
                 // 直接載入下一頁並累積到現有資料
@@ -498,6 +496,7 @@
 
         // 🚀 漸進式載入：先嘗試獲取更多資料，實際收到多少就緩存多少
         const params = new URLSearchParams({
+            action: 'getGuests',
             callback: 'handleGuestData',
             limit: 999999, // 嘗試獲取全部，實際能拿多少就拿多少
             page: 1,
@@ -536,7 +535,6 @@
 
         // 設置資料更新時間並保存至 localStorage
         updateCacheData(guestData);
-
 
         // 如果有搜尋關鍵字，進行篩選
         if (currentSearchTerm) {
@@ -578,6 +576,7 @@
         script.setAttribute('data-jsonp', `guestlist-page-${pageNumber}`);
 
         const params = new URLSearchParams({
+            action: 'getGuests',
             callback: `handleGuestDataPage${pageNumber}`,
             page: pageNumber,
             _t: Date.now()
@@ -684,7 +683,6 @@
         const endIndex = startIndex + itemsPerPage;
         const currentPageData = filteredData.slice(startIndex, endIndex);
 
-
         // 按家庭群組整理資料
         const groupedData = groupGuestsByFamily(currentPageData);
 
@@ -728,7 +726,7 @@
     function groupGuestsByFamily(guests) {
         const result = [];
         const familyMap = new Map();
-        
+
         // 分離家庭成員和個人賓客
         guests.forEach(guest => {
             if (guest.familyId) {
@@ -805,7 +803,6 @@ ${guest.collectMoney && guest.giftAmount ? `禮金金額: ${guest.giftAmount}` :
         if (guestInfo && guestInfo.familyId) {
             // 找到同家庭的所有成員
             const familyMembers = guestData.filter(guest => guest.familyId === guestInfo.familyId);
-
 
             if (familyMembers.length > 1) {
                 // 將家庭成員資訊編碼為 JSON 字串
@@ -905,24 +902,41 @@ ${guest.collectMoney && guest.giftAmount ? `禮金金額: ${guest.giftAmount}` :
             }
         });
 
-        // 添加刷新按鈕到標題旁邊
-        const headerDiv = document.querySelector('main .flex.items-center.justify-between');
-        const refreshButton = document.createElement('button');
-        refreshButton.className = 'btn-primary ml-4';
-        refreshButton.innerHTML = '<span class="material-symbols-outlined">refresh</span> 刷新資料';
-        refreshButton.onclick = () => refreshData(true); // 強制重新載入
+        // 刷新按鈕功能
+        function addRefreshButton() {
+            const headerDiv = document.querySelector('main .flex.items-center.justify-between');
+            if (!headerDiv) {
+                console.error('找不到頁面標題區域，無法添加刷新按鈕');
+                return;
+            }
 
-        const addGuestButton = headerDiv.querySelector('button');
-        addGuestButton.parentNode.insertBefore(refreshButton, addGuestButton);
+            // 防止重複添加
+            const existingButton = headerDiv.querySelector('.refresh-button');
+            if (existingButton) {
+                return;
+            }
+
+            // 創建刷新按鈕
+            const refreshButton = document.createElement('button');
+            refreshButton.className = 'btn-primary ml-4 refresh-button';
+            refreshButton.innerHTML = '<span class="material-symbols-outlined">refresh</span> 刷新資料';
+            refreshButton.onclick = () => refreshData(true);
+
+            // 直接添加到標題區域開頭
+            headerDiv.insertBefore(refreshButton, headerDiv.firstChild);
+        }
+
+        // 添加刷新按鈕
+        addRefreshButton();
 
         // 分頁按鈕事件
-        document.getElementById('prev-page').addEventListener('click', function() {
+        document.getElementById('prev-page')?.addEventListener('click', function() {
             if (currentPage > 1) {
                 goToPage(currentPage - 1);
             }
         });
 
-        document.getElementById('next-page').addEventListener('click', function() {
+        document.getElementById('next-page')?.addEventListener('click', function() {
             const totalPages = Math.ceil(filteredData.length / itemsPerPage);
             if (currentPage < totalPages) {
                 goToPage(currentPage + 1);
@@ -943,7 +957,6 @@ ${guest.collectMoney && guest.giftAmount ? `禮金金額: ${guest.giftAmount}` :
                 hasCake: urlParams.get('hasCake') === 'true',
                 cakeGiven: urlParams.get('cakeGiven') === 'true'
             };
-
 
             // ✅ 檢查是否有現有緩存資料（包括 localStorage）
             if (guestData.length === 0) {
