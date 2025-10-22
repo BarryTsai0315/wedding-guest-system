@@ -237,6 +237,10 @@
             // 檢查配置是否載入
             if (typeof window.CONFIG === 'undefined') {
                 console.warn('⚠️ 配置文件未載入，某些功能可能無法正常使用');
+            } else {
+                console.info('🔍 配置偵測啟動');
+                console.info('└─ GOOGLE_SCRIPT_URL:', window.CONFIG.GOOGLE_SCRIPT_URL || '(未設定)');
+                console.info('└─ GOOGLE_SCRIPT_READ_URL:', window.CONFIG.GOOGLE_SCRIPT_READ_URL || '(未設定)');
             }
 
             // 手動綁定魔法部驗證按鈕 (防止 auth.js 載入延遲)

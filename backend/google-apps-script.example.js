@@ -58,9 +58,10 @@ function getGuestList(spreadsheetId, sheetName, params) {
       guestName: row[2],
       collectMoney: row[3],
       giftAmount: row[4],
-      hasCake: row[5],
-      cakeGiven: row[6],
-      familyId: row[7] || null,
+      redEnvelopeNo: row[5],
+      hasCake: row[6],
+      cakeGiven: row[7],
+      familyId: row[8] || null,
       checkedIn: row[0] != null && row[0] != ''
     };
     if (searchTerm) {
@@ -90,13 +91,13 @@ function getFamilyInfoByName(spreadsheetId, guestSheetName, familySheetName, gue
     let targetFamilyId = null;
     for (let i = 1; i < guestData.length; i++) {
       const row = guestData[i];
-      if (row[2] === guestName.trim()) { targetFamilyId = row[7]; break; }
+      if (row[2] === guestName.trim()) { targetFamilyId = row[8]; break; }
     }
     if (!targetFamilyId) return { hasFamilyInfo: false, message: '該賓客無家庭資訊' };
     const familyMembers = [];
     for (let i = 1; i < guestData.length; i++) {
       const row = guestData[i];
-      if (row[7] === targetFamilyId) {
+      if (row[8] === targetFamilyId) {
         familyMembers.push({ memberName: row[2], relationship: '家人', isCheckedIn: row[0] != null && row[0] != '' });
       }
     }
@@ -124,11 +125,23 @@ function processSingleCheckIn(spreadsheetId, guestSheetName, data) {
     sheet.getRange(targetRowIndex, 1).setValue(formattedTime);
     sheet.getRange(targetRowIndex, 4).setValue(data.collectMoney || false);
     sheet.getRange(targetRowIndex, 5).setValue(data.giftAmount || 0);
-    sheet.getRange(targetRowIndex, 6).setValue(data.hasCake || false);
-    sheet.getRange(targetRowIndex, 7).setValue(data.cakeGiven || false);
-    sheet.getRange(targetRowIndex, 9).setValue(data.remarks || '');
+    sheet.getRange(targetRowIndex, 6).setValue(data.redEnvelopeNo || '');
+    sheet.getRange(targetRowIndex, 7).setValue(data.hasCake || false);
+    sheet.getRange(targetRowIndex, 8).setValue(data.cakeGiven || false);
+    sheet.getRange(targetRowIndex, 10).setValue(data.remarks || '');
   } else {
-    const newRowData = [formattedTime, data.serialNumber, data.guestName, data.collectMoney || false, data.giftAmount || 0, data.hasCake || false, data.cakeGiven || false, data.familyId || '', data.remarks || ''];
+    const newRowData = [
+      formattedTime,
+      data.serialNumber,
+      data.guestName,
+      data.collectMoney || false,
+      data.giftAmount || 0,
+      data.redEnvelopeNo || '',
+      data.hasCake || false,
+      data.cakeGiven || false,
+      data.familyId || '',
+      data.remarks || ''
+    ];
     sheet.appendRow(newRowData);
   }
   return { success: true, message: '單人報到成功' };
@@ -144,7 +157,7 @@ function processFamilyCheckIn(spreadsheetId, guestSheetName, familySheetName, da
     let checkInPersonRowIndex = -1;
     for (let i = 1; i < allData.length; i++) {
       const row = allData[i];
-      if (row[2] === data.guestName.trim()) { targetFamilyId = row[7]; checkInPersonRowIndex = i + 1; break; }
+      if (row[2] === data.guestName.trim()) { targetFamilyId = row[8]; checkInPersonRowIndex = i + 1; break; }
     }
     if (!targetFamilyId) return processSingleCheckIn(spreadsheetId, guestSheetName, data);
     let updatedCount = 0;
@@ -153,14 +166,15 @@ function processFamilyCheckIn(spreadsheetId, guestSheetName, familySheetName, da
       guestSheet.getRange(checkInPersonRowIndex, 1).setValue(formattedTime);
       guestSheet.getRange(checkInPersonRowIndex, 4).setValue(data.collectMoney || false);
       guestSheet.getRange(checkInPersonRowIndex, 5).setValue(data.giftAmount || 0);
-      guestSheet.getRange(checkInPersonRowIndex, 6).setValue(data.hasCake || false);
-      guestSheet.getRange(checkInPersonRowIndex, 7).setValue(data.cakeGiven || false);
-      guestSheet.getRange(checkInPersonRowIndex, 9).setValue(data.remarks || '');
+      guestSheet.getRange(checkInPersonRowIndex, 6).setValue(data.redEnvelopeNo || '');
+      guestSheet.getRange(checkInPersonRowIndex, 7).setValue(data.hasCake || false);
+      guestSheet.getRange(checkInPersonRowIndex, 8).setValue(data.cakeGiven || false);
+      guestSheet.getRange(checkInPersonRowIndex, 10).setValue(data.remarks || '');
       updatedCount++;
     }
     for (let i = 1; i < allData.length; i++) {
       const row = allData[i];
-      if (row[7] === targetFamilyId && row[2] !== data.guestName.trim()) {
+      if (row[8] === targetFamilyId && row[2] !== data.guestName.trim()) {
         familyMemberNames.push(row[2]);
         const memberRowIndex = i + 1;
         guestSheet.getRange(memberRowIndex, 1).setValue(formattedTime);

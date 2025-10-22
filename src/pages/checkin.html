@@ -131,13 +131,13 @@
 <form class="space-y-6">
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
 <div>
-<label class="block text-sm font-medium leading-6 text-[var(--text-color)]" for="serial-number">System Serial Number</label>
+<label class="block text-sm font-medium leading-6 text-[var(--text-color)]" for="serial-number">序號</label>
 <div class="mt-2">
 <input class="form-input w-full" id="serial-number" name="serial-number" placeholder="e.g., 934" type="text"/>
 </div>
 </div>
 <div>
-<label class="block text-sm font-medium leading-6 text-[var(--text-color)]" for="guest-name">Guest Name</label>
+<label class="block text-sm font-medium leading-6 text-[var(--text-color)]" for="guest-name">>賓客姓名</label>
 <div class="mt-2">
 <input class="form-input w-full" id="guest-name" name="guest-name" placeholder="e.g., Luna Lovegood" type="text"/>
 </div>
@@ -168,28 +168,21 @@
     </div>
 </div>
 <div class="space-y-4 pt-4 border-t border-gray-200">
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
 <div class="relative flex items-start">
 <div class="flex h-6 items-center">
 <input class="checkbox-magical" id="collect-money" name="collect-money" type="checkbox"/>
 </div>
 <div class="ml-3 text-sm leading-6">
-<label class="font-medium text-[var(--text-color)] cursor-pointer" for="collect-money">Collect Gift Money</label>
-</div>
-</div>
-<div class="relative flex items-start">
-<div class="flex h-6 items-center">
-<input class="checkbox-magical" id="has-cake" name="has-cake" type="checkbox"/>
-</div>
-<div class="ml-3 text-sm leading-6">
-<label class="font-medium text-[var(--text-color)] cursor-pointer" for="has-cake">Has Wedding Cake</label>
-</div>
-</div>
+<label class="font-medium text-[var(--text-color)] cursor-pointer" for="collect-money">是否收取禮金</label>
 </div>
 </div>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-end">
-<div id="gift-amount-section">
-<label class="block text-sm font-medium leading-6 text-[var(--text-color)]" for="gift-amount">Amount of Gift Money Collected</label>
+<div class="transition-opacity" id="red-envelope-section">
+<label class="block text-sm font-medium leading-6 text-[var(--text-color)]" for="red-envelope-no">紅包編號</label>
+<input class="form-input mt-2" disabled="" id="red-envelope-no" name="red-envelope-no" placeholder="例如：A-12" type="text"/>
+</div>
+<div id="gift-amount-section" class="transition-opacity">
+<label class="block text-sm font-medium leading-6 text-[var(--text-color)]" for="gift-amount">禮金金額</label>
 <div class="relative mt-2 rounded-md shadow-sm">
 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
 <span class="text-gray-500 sm:text-sm"></span>
@@ -197,18 +190,33 @@
 <input class="form-input block w-full pl-20" disabled="" id="gift-amount" name="gift-amount" placeholder="0.00" type="number"/>
 </div>
 </div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
+<div class="flex flex-col gap-3">
+<span class="block text-sm font-medium leading-6 text-[var(--text-color)]">是否有喜餅</span>
+<div class="flex gap-6">
+<label class="inline-flex items-center gap-3 text-sm text-[var(--text-color)] cursor-pointer">
+<input class="form-radio text-[var(--primary-color)]" type="radio" name="has-cake" value="true" id="has-cake-yes">
+<span>有</span>
+</label>
+<label class="inline-flex items-center gap-3 text-sm text-[var(--text-color)] cursor-pointer">
+<input class="form-radio text-[var(--primary-color)]" type="radio" name="has-cake" value="false" id="has-cake-no">
+<span>無</span>
+</label>
+</div>
+</div>
 <div class="relative flex items-start" id="cake-given-section">
 <div class="flex h-6 items-center">
 <input class="checkbox-magical" id="cake-given" name="cake-given" type="checkbox"/>
 </div>
 <div class="ml-3 text-sm leading-6">
-<label class="font-medium text-[var(--text-color)] cursor-pointer" for="cake-given">Wedding Cake Given</label>
+<label class="font-medium text-[var(--text-color)] cursor-pointer" for="cake-given">喜餅已發放</label>
 </div>
 </div>
 </div>
 <!-- 備註欄位 -->
 <div class="mt-6">
-<label class="block text-sm font-medium leading-6 text-[var(--text-color)]" for="remarks">備註 (Notes)</label>
+<label class="block text-sm font-medium leading-6 text-[var(--text-color)]" for="remarks">備註</label>
 <div class="mt-2">
 <textarea class="form-input w-full resize-none" id="remarks" name="remarks" placeholder="特殊需求、處理狀態等備註..." rows="3"></textarea>
 </div>
@@ -227,7 +235,7 @@
 
 <div class="pt-6 text-center">
 <button class="btn-hogwarts inline-flex items-center gap-2" type="submit">
-<span class="magic-wand-icon text-lg">auto_fix_high</span> Check-in Successful
+<span class="magic-wand-icon text-lg">auto_fix_high</span> 報到
                             </button>
 </div>
 
@@ -298,29 +306,74 @@
         if (collectMoney) {
             document.getElementById('collect-money').checked = true;
         }
-        if (hasCake) {
-            document.getElementById('has-cake').checked = true;
+        const hasCakeRadioYes = document.getElementById('has-cake-yes');
+        const hasCakeRadioNo = document.getElementById('has-cake-no');
+        if (hasCakeRadioYes && hasCakeRadioNo) {
+            if (hasCake) {
+                hasCakeRadioYes.checked = true;
+            } else {
+                hasCakeRadioNo.checked = true;
+            }
         }
 
         const collectMoneyCheckbox = document.getElementById('collect-money');
         const giftAmountInput = document.getElementById('gift-amount');
-            const giftAmountSection = document.getElementById('gift-amount-section');
-            const form = document.querySelector('form');
-            const curlHelper = document.getElementById('curl-helper');
-            const curlOutput = document.getElementById('curl-command-output');
+        const redEnvelopeInput = document.getElementById('red-envelope-no');
+        const giftAmountSection = document.getElementById('gift-amount-section');
+        const redEnvelopeSection = document.getElementById('red-envelope-section');
+        const cakeGivenCheckbox = document.getElementById('cake-given');
+        const cakeGivenSection = document.getElementById('cake-given-section');
+        const form = document.querySelector('form');
+        const curlHelper = document.getElementById('curl-helper');
+        const curlOutput = document.getElementById('curl-command-output');
 
-            function toggleGiftAmount() {
-                if (collectMoneyCheckbox.checked) {
-                    giftAmountInput.disabled = false;
-                    giftAmountSection.classList.remove('opacity-50');
+        const redEnvelopeParam = urlParams.get('redEnvelopeNo');
+        if (redEnvelopeParam) {
+            redEnvelopeInput.value = redEnvelopeParam;
+        }
+        const giftAmountParam = urlParams.get('giftAmount');
+        if (giftAmountParam) {
+            giftAmountInput.value = parseInt(giftAmountParam, 10) || 0;
+        }
+        const cakeGivenParam = urlParams.get('cakeGiven') === 'true';
+        if (cakeGivenParam) {
+            cakeGivenCheckbox.checked = true;
+        }
+
+        function toggleGiftAmount() {
+            if (collectMoneyCheckbox.checked) {
+                giftAmountInput.disabled = false;
+                redEnvelopeInput.disabled = false;
+                giftAmountSection.classList.remove('opacity-50');
+                redEnvelopeSection.classList.remove('opacity-50');
             } else {
                 giftAmountInput.disabled = true;
                 giftAmountInput.value = '';
+                redEnvelopeInput.disabled = true;
+                redEnvelopeInput.value = '';
                 giftAmountSection.classList.add('opacity-50');
+                redEnvelopeSection.classList.add('opacity-50');
+            }
+        }
+
+        function toggleCakeGiven() {
+            if (hasCakeRadioYes && hasCakeRadioYes.checked) {
+                cakeGivenCheckbox.disabled = false;
+                cakeGivenSection.classList.remove('opacity-50');
+            } else {
+                cakeGivenCheckbox.disabled = true;
+                cakeGivenCheckbox.checked = false;
+                cakeGivenSection.classList.add('opacity-50');
             }
         }
 
         collectMoneyCheckbox.addEventListener('change', toggleGiftAmount);
+        if (hasCakeRadioYes) {
+            hasCakeRadioYes.addEventListener('change', toggleCakeGiven);
+        }
+        if (hasCakeRadioNo) {
+            hasCakeRadioNo.addEventListener('change', toggleCakeGiven);
+        }
 
         // 表單提交處理
         form.addEventListener('submit', async function(e) {
@@ -340,7 +393,8 @@
                         guestName: formData.get('guest-name'),
                         collectMoney: formData.get('collect-money') === 'on',
                         giftAmount: parseInt(formData.get('gift-amount')) || 0,
-                        hasCake: formData.get('has-cake') === 'on',
+                        redEnvelopeNo: formData.get('red-envelope-no') || '',
+                        hasCake: formData.get('has-cake') === 'true',
                         cakeGiven: formData.get('cake-given') === 'on',
                         remarks: formData.get('remarks') || ''
                     }
@@ -353,6 +407,7 @@
                     'guest-name': formData.get('guest-name'),
                     'collect-money': formData.get('collect-money'),
                     'gift-amount': formData.get('gift-amount'),
+                    'red-envelope-no': formData.get('red-envelope-no'),
                     'has-cake': formData.get('has-cake'),
                     'cake-given': formData.get('cake-given')
                 });
@@ -396,6 +451,7 @@
                         name: encodeURIComponent(payload.data.guestName),
                         collectMoney: payload.data.collectMoney || false,
                         giftAmount: payload.data.giftAmount || 0,
+                        redEnvelopeNo: encodeURIComponent(payload.data.redEnvelopeNo || ''),
                         hasCake: payload.data.hasCake || false,
                         cakeGiven: payload.data.cakeGiven || false
                     });
@@ -417,6 +473,7 @@
 
         // Initial state
         toggleGiftAmount();
+        toggleCakeGiven();
     });
 
     // 簡單查詢家庭成員並在check-in按鈕上方顯示 (使用JSONP)

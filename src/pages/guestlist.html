@@ -379,7 +379,7 @@
 
     // 🔄 本地更新賓客資料（避免重新請求）
     function updateLocalGuestData(checkInData) {
-        const { serialNumber, guestName, familyId, collectMoney, giftAmount, hasCake, cakeGiven } = checkInData;
+        const { serialNumber, guestName, familyId, collectMoney, giftAmount, redEnvelopeNo, hasCake, cakeGiven } = checkInData;
 
         // 更新報到操作者
         const guestIndex = guestData.findIndex(guest =>
@@ -402,6 +402,7 @@
         const giftUpdate = {
             collectMoney: Boolean(collectMoney),
             giftAmount: Number(giftAmount) || 0,
+            redEnvelopeNo: collectMoney ? String(redEnvelopeNo || '').trim() : '',
             hasCake: Boolean(hasCake),
             cakeGiven: Boolean(cakeGiven)
         };
@@ -691,27 +692,22 @@
             const rowClass = isCheckedIn ? 'checked-in-row' : 'unchecked-row';
             const buttonClass = isCheckedIn ? 'btn-hogwarts bg-green-200 text-green-800 hover:bg-green-300' : 'btn-hogwarts';
             const buttonText = isCheckedIn ? '<span class="material-symbols-outlined magic-sparkle">edit</span> 已報到' : '<span class="material-symbols-outlined magic-sparkle">login</span> 未報到';
-            const buttonAction = isCheckedIn ? `viewGuestDetails('${guest.serialNumber}')` : `goToCheckin('${guest.serialNumber}', '${guest.guestName}', ${guest.collectMoney}, ${guest.hasCake})`;
+            const buttonAction = `goToCheckin('${guest.serialNumber}', '${guest.guestName}', ${guest.collectMoney}, ${guest.hasCake})`;
 
             // 添加家庭群組樣式
             const familyGroupClass = guest.familyGroupClass || '';
             const familyDisplay = guest.familyId ? `<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">${guest.familyId}</span>` : '-';
+
+            const collectMoneyText = guest.collectMoney ? '收禮金' : '不收禮金';
+            const hasCakeText = guest.hasCake ? '有喜餅' : '無喜餅';
 
             return `
                 <tr class="transition-colors ${rowClass} ${familyGroupClass}">
                     <td class="table-cell">${guest.serialNumber}</td>
                     <td class="table-cell font-medium">${guest.guestName}</td>
                     <td class="table-cell text-center">${familyDisplay}</td>
-                    <td class="table-cell text-center">
-                        <input ${guest.collectMoney ? 'checked' : ''}
-                               class="checkbox-magical ${isCheckedIn ? 'border-green-300' : ''}"
-                               type="checkbox" disabled/>
-                    </td>
-                    <td class="table-cell text-center">
-                        <input ${guest.hasCake ? 'checked' : ''}
-                               class="checkbox-magical ${isCheckedIn ? 'border-green-300' : ''}"
-                               type="checkbox" disabled/>
-                    </td>
+                    <td class="table-cell text-center text-sm font-medium ${guest.collectMoney ? 'text-green-700' : 'text-gray-500'}">${collectMoneyText}</td>
+                    <td class="table-cell text-center text-sm font-medium ${guest.hasCake ? 'text-purple-700' : 'text-gray-500'}">${hasCakeText}</td>
                     <td class="table-cell text-right">
                         <button class="${buttonClass}" onclick="${buttonAction}">
                             ${buttonText}
@@ -769,6 +765,7 @@
 姓名: ${guest.guestName}
 收禮金: ${guest.collectMoney ? '是' : '否'}
 ${guest.collectMoney && guest.giftAmount ? `禮金金額: ${guest.giftAmount}` : ''}
+${guest.collectMoney && guest.redEnvelopeNo ? `紅包編號: ${guest.redEnvelopeNo}` : ''}
 有喜餅: ${guest.hasCake ? '是' : '否'}
 發放喜餅: ${guest.cakeGiven ? '是' : '否'}
 報到時間: ${guest.timestamp ? new Date(guest.timestamp).toLocaleString('zh-TW') : '尚未報到'}
@@ -780,24 +777,33 @@ ${guest.collectMoney && guest.giftAmount ? `禮金金額: ${guest.giftAmount}` :
     // 跳轉到報到畫面
     function goToCheckin(serialNumber, guestName, collectMoney, hasCake) {
         // 從 guestData 中找到該賓客的完整資訊
-        const guestInfo = guestData.find(guest => guest.serialNumber === parseInt(serialNumber));
+        const guestInfo = guestData.find(guest =>
+            String(guest.serialNumber).trim() === String(serialNumber).trim()
+        );
 
-        // 除錯確認：類型問題已修正
-        console.log('✅ 類型修正後查詢結果:', {
-            originalSerialNumber: serialNumber,
-            serialNumberType: typeof serialNumber,
-            parsedSerialNumber: parseInt(serialNumber),
-            foundGuestInfo: !!guestInfo,
-            guestInfoFamilyId: guestInfo ? guestInfo.familyId : '未找到賓客'
-        });
+        const toBoolean = value => value === true ||
+            value === 'true' ||
+            value === 'TRUE' ||
+            value === 1 ||
+            value === '1';
 
-        // 基本參數
         const params = new URLSearchParams({
             sn: serialNumber,
             name: encodeURIComponent(guestName),
-            collectMoney: collectMoney,
-            hasCake: hasCake
+            collectMoney: guestInfo ? toBoolean(guestInfo.collectMoney) : collectMoney,
+            hasCake: guestInfo ? toBoolean(guestInfo.hasCake) : hasCake
         });
+
+        const giftAmountValue = guestInfo ? Number(guestInfo.giftAmount || 0) : 0;
+        params.set('giftAmount', giftAmountValue);
+
+        const redEnvelopeValue = guestInfo && guestInfo.redEnvelopeNo
+            ? String(guestInfo.redEnvelopeNo)
+            : '';
+        params.set('redEnvelopeNo', redEnvelopeValue);
+
+        const cakeGivenValue = guestInfo ? toBoolean(guestInfo.cakeGiven) : false;
+        params.set('cakeGiven', cakeGivenValue);
 
         // 如果有家庭編號，加入家庭成員資訊
         if (guestInfo && guestInfo.familyId) {
@@ -954,6 +960,7 @@ ${guest.collectMoney && guest.giftAmount ? `禮金金額: ${guest.giftAmount}` :
                 guestName: decodeURIComponent(urlParams.get('name') || ''),
                 collectMoney: urlParams.get('collectMoney') === 'true',
                 giftAmount: parseInt(urlParams.get('giftAmount') || '0'),
+                redEnvelopeNo: decodeURIComponent(urlParams.get('redEnvelopeNo') || ''),
                 hasCake: urlParams.get('hasCake') === 'true',
                 cakeGiven: urlParams.get('cakeGiven') === 'true'
             };
