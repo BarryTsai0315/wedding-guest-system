@@ -104,30 +104,25 @@
 </div>
 <div class="flex flex-1 justify-end gap-6">
 <nav class="flex items-center gap-8">
-<a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="#">Dashboard</a>
-<a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="#">Guests</a>
-<a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="#">Tables</a>
+<a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="../../index.html">Home</a>
+<a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="guestlist.html">Guests</a>
+<a class="text-sm font-medium text-[var(--primary-color)] font-semibold" href="#">Check In</a>
 <a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="#">Gifts</a>
 </nav>
-<div class="flex items-center gap-4">
-<button class="flex size-10 cursor-pointer items-center justify-center rounded-full bg-[var(--secondary-color)] text-[var(--text-color)] transition-colors hover:bg-gray-200">
-<span class="material-symbols-outlined">notifications</span>
-</button>
-<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-white shadow-md" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAzoLzGX5LzjT3jrnVLh1olWlJv05hkIF-_4qpqB7r3vt_6DxQoFKqlER0FwQC8_ovDJtJbJNrZKOnh1hSVs9rwgpEToPlx8yQDXhBy17Fc1d-_dRUvIy-CidFexPgY3FqRWoR3TCzU1oV7tMiWTH625DSiyPEc8dJhUu3q22m088UVWfE_haSPGhm5-fsXAEZ-bX5n2WAEFT8WFsOtMsZFRTQiR7v199fv3ph7Is0BX9mm05BO0wDLmkKqMKlWATVFEsluPKaILAk");'></div>
-</div>
 </div>
 </header>
 <main class="flex flex-1 justify-center py-12">
-<div class="w-full max-w-2xl px-4">
+<div class="w-full max-w-3xl px-6">
 <div class="bg-white p-8 sm:p-12 rounded-2xl shadow-lg border border-[var(--subtle-border)]">
-<div class="text-center mb-10 relative">
-<h2 class="text-3xl font-bold text-[var(--text-color)] tracking-tight">Guest Check-In</h2>
-<p class="mt-2 text-base text-gray-500">Welcome to a magical celebration!</p>
-</div>
-<div class="mb-6">
-  <button type="button" class="btn-hogwarts inline-flex items-center gap-2" onclick="goBackToGuestList()">
-    <span class="material-symbols-outlined text-lg">arrow_back</span> 返回賓客清單
+<div class="relative mb-6">
+  <button type="button" class="inline-flex items-center gap-2 text-sm font-medium text-[var(--primary-color)] hover:text-blue-700 transition-colors absolute left-0 top-1/2 -translate-y-1/2" onclick="goBackToGuestList()">
+    <span class="material-symbols-outlined text-lg">arrow_back</span>
+    返回賓客清單
   </button>
+  <div class="text-center">
+    <h2 class="text-3xl font-bold text-[var(--text-color)] tracking-tight">Guest Check-In</h2>
+    <p class="mt-2 text-base text-gray-500">Welcome to a magical celebration!</p>
+  </div>
 </div>
 <form class="space-y-6">
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
