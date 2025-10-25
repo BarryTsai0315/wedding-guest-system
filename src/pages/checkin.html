@@ -121,12 +121,13 @@
 <div class="w-full max-w-2xl px-4">
 <div class="bg-white p-8 sm:p-12 rounded-2xl shadow-lg border border-[var(--subtle-border)]">
 <div class="text-center mb-10 relative">
-<button onclick="goBack()" class="absolute left-0 top-0 flex items-center gap-2 text-sm font-medium text-[var(--primary-color)] hover:text-blue-700 transition-colors">
-<span class="material-symbols-outlined text-lg">arrow_back</span>
-回到賓客清單
-</button>
 <h2 class="text-3xl font-bold text-[var(--text-color)] tracking-tight">Guest Check-In</h2>
 <p class="mt-2 text-base text-gray-500">Welcome to a magical celebration!</p>
+</div>
+<div class="mb-6">
+  <button type="button" class="btn-hogwarts inline-flex items-center gap-2" onclick="goBackToGuestList()">
+    <span class="material-symbols-outlined text-lg">arrow_back</span> 返回賓客清單
+  </button>
 </div>
 <form class="space-y-6">
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -257,10 +258,8 @@
     // Google Apps Script URL 從配置文件載入
     const GOOGLE_SCRIPT_URL = window.CONFIG?.GOOGLE_SCRIPT_URL || alert('請先設定 config.js 配置文件！');
 
-    // 回到賓客清單頁面
-    function goBack() {
-        // 添加時間戳確保頁面重新載入並刷新資料
-        window.location.href = 'guestlist.html?refresh=' + Date.now();
+    function goBackToGuestList() {
+        window.location.href = 'guestlist.html';
     }
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -323,6 +322,7 @@
         const redEnvelopeSection = document.getElementById('red-envelope-section');
         const cakeGivenCheckbox = document.getElementById('cake-given');
         const cakeGivenSection = document.getElementById('cake-given-section');
+        const remarksField = document.getElementById('remarks');
         const form = document.querySelector('form');
         const curlHelper = document.getElementById('curl-helper');
         const curlOutput = document.getElementById('curl-command-output');
@@ -338,6 +338,11 @@
         const cakeGivenParam = urlParams.get('cakeGiven') === 'true';
         if (cakeGivenParam) {
             cakeGivenCheckbox.checked = true;
+        }
+
+        const remarksParamRaw = urlParams.get('remarks');
+        if (remarksParamRaw && remarksField) {
+            remarksField.value = decodeURIComponent(remarksParamRaw);
         }
 
         function toggleGiftAmount() {
@@ -453,7 +458,8 @@
                         giftAmount: payload.data.giftAmount || 0,
                         redEnvelopeNo: encodeURIComponent(payload.data.redEnvelopeNo || ''),
                         hasCake: payload.data.hasCake || false,
-                        cakeGiven: payload.data.cakeGiven || false
+                        cakeGiven: payload.data.cakeGiven || false,
+                        remarks: encodeURIComponent(payload.data.remarks || '')
                     });
                     window.location.href = `guestlist.html?${checkInParams.toString()}`;
                 }, 2000);

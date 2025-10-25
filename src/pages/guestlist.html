@@ -159,37 +159,31 @@
 </div>
 <div class="flex flex-1 justify-end gap-6">
 <nav class="flex items-center gap-8">
-<a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="#">Dashboard</a>
+<a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="../../index.html">Home</a>
 <a class="text-sm font-medium text-[var(--primary-color)] font-semibold" href="#">Guests</a>
-<a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="#">Tables</a>
 <a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="#">Gifts</a>
 </nav>
-<div class="flex items-center gap-4">
-<button class="flex size-10 cursor-pointer items-center justify-center rounded-full bg-[var(--secondary-color)] text-[var(--text-color)] transition-colors hover:bg-gray-200">
-<span class="material-symbols-outlined">notifications</span>
-</button>
-<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-white shadow-md" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAzoLzGX5LzjT3jrnVLh1olWlJv05hkIF-_4qpqB7r3vt_6DxQoFKqlER0FwQC8_ovDJtJbJNrZKOnh1hSVs9rwgpEToPlx8yQDXhBy17Fc1d-_dRUvIy-CidFexPgY3FqRWoR3TCzU1oV7tMiWTH625DSiyPEc8dJhUu3q22m088UVWfE_haSPGhm5-fsXAEZ-bX5n2WAEFT8WFsOtMsZFRTQiR7v199fv3ph7Is0BX9mm05BO0wDLmkKqMKlWATVFEsluPKaILAk");'></div>
 </div>
 </div>
 </header>
 <main class="flex-1 p-6 sm:p-10">
 <div class="mx-auto max-w-7xl">
-<div class="flex items-center justify-between mb-8">
-<h2 class="text-3xl font-bold text-[var(--hp-brown)] tracking-tight">賓客名冊</h2>
-<a href="../../index.html" class="btn-hogwarts">
-<span class="material-symbols-outlined text-lg">home</span> 回到主頁
-</a>
+<div class="flex flex-col items-center gap-4 mb-8">
+<h2 class="text-3xl font-bold text-[var(--hp-brown)] tracking-tight text-center">賓客名冊</h2>
 </div>
 <div class="magic-table rounded-2xl overflow-hidden">
 <!-- 搜尋欄位 -->
 <div class="p-6 border-b border-[var(--subtle-border)]">
-<div class="relative max-w-md">
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-4">
+<div class="relative max-w-md w-full">
 <span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">search</span>
 <input type="text" id="search-input" placeholder="搜尋編號或姓名..."
        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all">
 <button id="clear-search" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 hidden">
 <span class="material-symbols-outlined text-lg">close</span>
 </button>
+</div>
+<div class="flex justify-center" id="guestlist-actions"></div>
 </div>
 </div>
 <div class="overflow-x-auto">
@@ -379,7 +373,7 @@
 
     // 🔄 本地更新賓客資料（避免重新請求）
     function updateLocalGuestData(checkInData) {
-        const { serialNumber, guestName, familyId, collectMoney, giftAmount, redEnvelopeNo, hasCake, cakeGiven } = checkInData;
+        const { serialNumber, guestName, familyId, collectMoney, giftAmount, redEnvelopeNo, hasCake, cakeGiven, remarks } = checkInData;
 
         // 更新報到操作者
         const guestIndex = guestData.findIndex(guest =>
@@ -404,7 +398,8 @@
             giftAmount: Number(giftAmount) || 0,
             redEnvelopeNo: collectMoney ? String(redEnvelopeNo || '').trim() : '',
             hasCake: Boolean(hasCake),
-            cakeGiven: Boolean(cakeGiven)
+            cakeGiven: Boolean(cakeGiven),
+            remarks: String(remarks || '').trim()
         };
 
         // 主要報到者獲得完整更新
@@ -768,6 +763,7 @@ ${guest.collectMoney && guest.giftAmount ? `禮金金額: ${guest.giftAmount}` :
 ${guest.collectMoney && guest.redEnvelopeNo ? `紅包編號: ${guest.redEnvelopeNo}` : ''}
 有喜餅: ${guest.hasCake ? '是' : '否'}
 發放喜餅: ${guest.cakeGiven ? '是' : '否'}
+備註: ${guest.remarks ? guest.remarks : '無'}
 報到時間: ${guest.timestamp ? new Date(guest.timestamp).toLocaleString('zh-TW') : '尚未報到'}
             `;
             alert(details);
@@ -804,6 +800,9 @@ ${guest.collectMoney && guest.redEnvelopeNo ? `紅包編號: ${guest.redEnvelope
 
         const cakeGivenValue = guestInfo ? toBoolean(guestInfo.cakeGiven) : false;
         params.set('cakeGiven', cakeGivenValue);
+
+        const remarksValue = guestInfo ? encodeURIComponent(guestInfo.remarks || '') : '';
+        params.set('remarks', remarksValue);
 
         // 如果有家庭編號，加入家庭成員資訊
         if (guestInfo && guestInfo.familyId) {
@@ -910,14 +909,14 @@ ${guest.collectMoney && guest.redEnvelopeNo ? `紅包編號: ${guest.redEnvelope
 
         // 刷新按鈕功能
         function addRefreshButton() {
-            const headerDiv = document.querySelector('main .flex.items-center.justify-between');
-            if (!headerDiv) {
+            const actionsContainer = document.getElementById('guestlist-actions');
+            if (!actionsContainer) {
                 console.error('找不到頁面標題區域，無法添加刷新按鈕');
                 return;
             }
 
             // 防止重複添加
-            const existingButton = headerDiv.querySelector('.refresh-button');
+            const existingButton = actionsContainer.querySelector('.refresh-button');
             if (existingButton) {
                 return;
             }
@@ -928,8 +927,7 @@ ${guest.collectMoney && guest.redEnvelopeNo ? `紅包編號: ${guest.redEnvelope
             refreshButton.innerHTML = '<span class="material-symbols-outlined">refresh</span> 刷新資料';
             refreshButton.onclick = () => refreshData(true);
 
-            // 直接添加到標題區域開頭
-            headerDiv.insertBefore(refreshButton, headerDiv.firstChild);
+            actionsContainer.appendChild(refreshButton);
         }
 
         // 添加刷新按鈕
@@ -955,6 +953,7 @@ ${guest.collectMoney && guest.redEnvelopeNo ? `紅包編號: ${guest.redEnvelope
 
         if (isLocalUpdate) {
             // 從 URL 參數解析報到資訊
+            const remarksParam = urlParams.get('remarks');
             const checkInData = {
                 serialNumber: urlParams.get('sn'),
                 guestName: decodeURIComponent(urlParams.get('name') || ''),
@@ -962,7 +961,8 @@ ${guest.collectMoney && guest.redEnvelopeNo ? `紅包編號: ${guest.redEnvelope
                 giftAmount: parseInt(urlParams.get('giftAmount') || '0'),
                 redEnvelopeNo: decodeURIComponent(urlParams.get('redEnvelopeNo') || ''),
                 hasCake: urlParams.get('hasCake') === 'true',
-                cakeGiven: urlParams.get('cakeGiven') === 'true'
+                cakeGiven: urlParams.get('cakeGiven') === 'true',
+                remarks: remarksParam ? decodeURIComponent(remarksParam) : ''
             };
 
             // ✅ 檢查是否有現有緩存資料（包括 localStorage）

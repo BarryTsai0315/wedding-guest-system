@@ -62,6 +62,7 @@ function getGuestList(spreadsheetId, sheetName, params) {
       hasCake: row[6],
       cakeGiven: row[7],
       familyId: row[8] || null,
+      remarks: row[9] || '',
       checkedIn: row[0] != null && row[0] != ''
     };
     if (searchTerm) {
