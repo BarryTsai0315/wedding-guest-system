@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>古靈閣金庫 - Gringotts Vault</title>
+    <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+    <link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Newsreader%3Awght%40400%3B500%3B700%3B800&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" onload="this.rel='stylesheet'" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link href="data:image/x-icon;base64," rel="icon" type="image/x-icon"/>
+    <script src="../../config/config.js"></script>
+    <link rel="stylesheet" href="../../assets/css/harry-potter.css">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <style type="text/tailwindcss">
+        :root {
+            --primary-color: #1791cf;
+            --secondary-color: #f0f3f4;
+            --text-color: #111518;
+            --background-color: #f3e9d8;
+            --accent-color: #e0f7fa;
+            --subtle-border: #e0e0e0;
+            --gold-color: #d4af37;
+            --silver-color: #c0c0c0;
+        }
+        body {
+            font-family: 'Newsreader', 'Noto Sans', sans-serif;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 2px solid var(--subtle-border);
+        }
+        .progress-bar {
+            width: 100%;
+            height: 2rem;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #fbbf24, #f59e0b, #d97706);
+            transition: width 1s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 1rem;
+            color: white;
+            font-weight: bold;
+            font-size: 0.875rem;
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--gold-color);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .stat-label {
+            font-size: 1rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+        .vault-icon {
+            font-size: 3rem;
+            color: var(--gold-color);
+        }
+    </style>
+</head>
+<body class="bg-[var(--background-color)]">
+<div class="relative flex size-full min-h-screen flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+
+<!-- Header -->
+<header class="magical-header flex items-center justify-between whitespace-nowrap px-6 py-6 md:px-10">
+    <div class="flex items-center gap-4 text-white">
+        <span class="material-symbols-outlined text-4xl text-[var(--hp-parchment)] magic-sparkle">savings</span>
+        <div>
+            <h1 class="hogwarts-title text-2xl md:text-3xl font-bold leading-tight">古靈閣金庫</h1>
+            <p class="text-[var(--hp-parchment)] text-sm opacity-90">Gringotts Vault Statistics</p>
+        </div>
+    </div>
+    <div class="flex flex-1 justify-end gap-6">
+        <nav class="flex items-center gap-8">
+            <a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="../../index.html">Home</a>
+            <a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="guestlist.html">Guests</a>
+            <a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="checkin.html">Check In</a>
+            <a class="text-sm font-medium text-[var(--primary-color)] font-semibold" href="#">Vault</a>
+        </nav>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="flex-1 p-6 sm:p-10">
+    <div class="mx-auto max-w-7xl">
+
+        <!-- 標題 -->
+        <div class="flex flex-col items-center gap-4 mb-8">
+            <h2 class="text-3xl font-bold text-[var(--hp-brown)] tracking-tight text-center">金庫統計</h2>
+            <p class="text-gray-600 text-center">Wedding Vault Statistics</p>
+        </div>
+
+        <!-- 載入中 -->
+        <div id="loading" class="text-center py-12">
+            <span class="material-symbols-outlined animate-spin text-4xl text-[var(--primary-color)]">refresh</span>
+            <div class="mt-4 text-gray-600">載入統計資料中...</div>
+        </div>
+
+        <!-- 統計卡片容器 -->
+        <div id="stats-container" class="grid grid-cols-1 md:grid-cols-2 gap-8 hidden">
+
+            <!-- 卡片 1: 禮金統計 -->
+            <div class="stat-card">
+                <div class="flex items-center gap-4 mb-6">
+                    <span class="material-symbols-outlined vault-icon">payments</span>
+                    <h3 class="text-2xl font-bold text-[var(--hp-brown)]">禮金統計</h3>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- 收到總額 -->
+                    <div>
+                        <div class="stat-label">收到總額</div>
+                        <div class="stat-number" id="total-gift-amount">$0</div>
+                    </div>
+
+                    <!-- 目標金額 (隱藏) -->
+                    <div class="hidden">
+                        <div class="stat-label">目標金額</div>
+                        <div class="text-2xl font-semibold text-gray-700" id="target-gift-amount">$0</div>
+                    </div>
+
+                    <!-- 進度 (隱藏) -->
+                    <div class="hidden">
+                        <div class="stat-label mb-2">進度</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="gift-progress-fill" style="width: 0%">
+                                <span id="gift-progress-text">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 達成率 (隱藏) -->
+                    <div class="text-center pt-4 border-t border-gray-200 hidden">
+                        <span class="text-sm text-gray-600">達成率：</span>
+                        <span class="text-xl font-bold text-[var(--gold-color)]" id="gift-achievement-rate">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 卡片 2: 喜餅統計 -->
+            <div class="stat-card">
+                <div class="flex items-center gap-4 mb-6">
+                    <span class="material-symbols-outlined vault-icon">cake</span>
+                    <h3 class="text-2xl font-bold text-[var(--hp-brown)]">喜餅統計</h3>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- 喜餅總數 -->
+                    <div>
+                        <div class="stat-label">喜餅總數</div>
+                        <div class="stat-number text-purple-600" id="total-cake-count">0</div>
+                    </div>
+
+                    <!-- 已發放 / 剩餘 -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <div class="stat-label">已發放</div>
+                            <div class="text-3xl font-bold text-green-600" id="given-cake-count">0</div>
+                        </div>
+                        <div>
+                            <div class="stat-label">剩餘</div>
+                            <div class="text-3xl font-bold text-orange-600" id="remaining-cake-count">0</div>
+                        </div>
+                    </div>
+
+                    <!-- 進度 -->
+                    <div>
+                        <div class="stat-label mb-2">發放進度</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill bg-gradient-to-r from-purple-400 to-purple-600" id="cake-progress-fill" style="width: 0%">
+                                <span id="cake-progress-text">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 發放率 -->
+                    <div class="text-center pt-4 border-t border-gray-200">
+                        <span class="text-sm text-gray-600">發放率：</span>
+                        <span class="text-xl font-bold text-purple-600" id="cake-distribution-rate">0%</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</main>
+
+</div>
+</div>
+
+<script>
+    // Google Apps Script URL 從配置文件載入
+    let GOOGLE_SCRIPT_READ_URL = window.CONFIG?.GOOGLE_SCRIPT_URL || (() => { alert('請先設定 config.js 配置文件！'); return ''; })();
+    const TARGET_GIFT_AMOUNT = window.CONFIG?.GRINGOTTS?.TARGET_GIFT_AMOUNT || 1000000;
+
+    // 🎯 Linus: 修復 Google 多帳號登入導致的 /u/X/ 路徑問題
+    if (GOOGLE_SCRIPT_READ_URL && GOOGLE_SCRIPT_READ_URL.includes('/macros/u/')) {
+        console.warn('⚠️ 偵測到 Google 多帳號 URL (會導致 404):', GOOGLE_SCRIPT_READ_URL);
+        GOOGLE_SCRIPT_READ_URL = GOOGLE_SCRIPT_READ_URL.replace(/\/macros\/u\/\d+\/s\//g, '/macros/s/');
+        console.log('✅ 已修正為正確 URL:', GOOGLE_SCRIPT_READ_URL);
+    }
+
+    let guestData = [];
+
+    // 🧹 徹底清理所有 JSONP 殘留
+    function cleanupAllJSONP() {
+        document.querySelectorAll('script[data-jsonp]').forEach(script => script.remove());
+        Object.keys(window).forEach(key => {
+            if (key.startsWith('handleGuestData')) {
+                delete window[key];
+            }
+        });
+    }
+
+    // 載入賓客資料
+    function loadGuestData() {
+        cleanupAllJSONP();
+
+        window.handleGuestData = function(response) {
+            if (response.error) {
+                console.error('伺服器錯誤:', response.error);
+                showError('載入資料失敗：' + (response.message || '未知錯誤'));
+                return;
+            }
+
+            if (response.data && Array.isArray(response.data)) {
+                guestData = response.data;
+            } else if (Array.isArray(response)) {
+                guestData = response;
+            } else {
+                console.error('未知的資料格式:', response);
+                guestData = [];
+            }
+
+            // 如果有分頁，載入所有頁面
+            if (response.pagination && response.pagination.hasNextPage) {
+                loadMorePages(response.pagination.currentPage + 1, guestData);
+                return;
+            } else {
+                calculateAndDisplayStats(guestData);
+            }
+        };
+
+        const script = document.createElement('script');
+        script.setAttribute('data-jsonp', 'gringotts');
+        script.crossOrigin = 'anonymous';
+
+        const params = new URLSearchParams({
+            action: 'getGuests',
+            callback: 'handleGuestData',
+            limit: 999999,
+            page: 1,
+            _t: Date.now()
+        });
+
+        const finalURL = `${GOOGLE_SCRIPT_READ_URL}?${params.toString()}`;
+        script.src = finalURL;
+
+        console.log('📡 JSONP 請求 URL:', finalURL);
+
+        script.onerror = function() {
+            console.error('❌ JSONP 請求失敗');
+            showError('網路連接失敗');
+        };
+
+        document.head.appendChild(script);
+    }
+
+    // 載入剩餘頁面
+    function loadMorePages(pageNumber, accumulatedData) {
+        window[`handleGuestDataPage${pageNumber}`] = function(response) {
+            let currentPageData = [];
+            if (response.data && Array.isArray(response.data)) {
+                currentPageData = response.data;
+            } else if (Array.isArray(response)) {
+                currentPageData = response;
+            }
+
+            const totalData = [...accumulatedData, ...currentPageData];
+
+            if (response.pagination && response.pagination.hasNextPage) {
+                loadMorePages(pageNumber + 1, totalData);
+            } else {
+                calculateAndDisplayStats(totalData);
+            }
+        };
+
+        const script = document.createElement('script');
+        script.setAttribute('data-jsonp', `gringotts-page-${pageNumber}`);
+        script.crossOrigin = 'anonymous';
+
+        const params = new URLSearchParams({
+            action: 'getGuests',
+            callback: `handleGuestDataPage${pageNumber}`,
+            page: pageNumber,
+            _t: Date.now()
+        });
+
+        script.src = `${GOOGLE_SCRIPT_READ_URL}?${params.toString()}`;
+        script.onerror = function() {
+            console.error(`❌ 第 ${pageNumber} 頁載入失敗`);
+            calculateAndDisplayStats(accumulatedData);
+        };
+
+        document.head.appendChild(script);
+    }
+
+    // 計算並顯示統計
+    function calculateAndDisplayStats(data) {
+        console.log('📊 開始計算統計，資料筆數:', data.length);
+
+        // 🎯 禮金統計
+        let totalGiftAmount = 0;
+        data.forEach(guest => {
+            // 只計算有收禮金的賓客
+            if (guest.collectMoney && guest.giftAmount) {
+                const amount = parseInt(guest.giftAmount) || 0;
+                totalGiftAmount += amount;
+            }
+        });
+
+        const giftProgress = TARGET_GIFT_AMOUNT > 0 ? Math.round((totalGiftAmount / TARGET_GIFT_AMOUNT) * 100) : 0;
+
+        // 🎯 喜餅統計
+        const totalCakes = data.filter(guest => guest.hasCake).length;
+        const givenCakes = data.filter(guest => guest.cakeGiven).length;
+        const remainingCakes = totalCakes - givenCakes;
+        const cakeProgress = totalCakes > 0 ? Math.round((givenCakes / totalCakes) * 100) : 0;
+
+        console.log('📊 統計結果:');
+        console.log('  禮金總額:', totalGiftAmount);
+        console.log('  目標金額:', TARGET_GIFT_AMOUNT);
+        console.log('  喜餅總數:', totalCakes);
+        console.log('  已發放:', givenCakes);
+        console.log('  剩餘:', remainingCakes);
+
+        // 更新 UI
+        updateUI(totalGiftAmount, TARGET_GIFT_AMOUNT, giftProgress, totalCakes, givenCakes, remainingCakes, cakeProgress);
+    }
+
+    // 更新 UI
+    function updateUI(totalGiftAmount, targetAmount, giftProgress, totalCakes, givenCakes, remainingCakes, cakeProgress) {
+        // 格式化金額（加上千分位逗號）
+        const formatCurrency = (amount) => {
+            return '$' + amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        };
+
+        // 禮金統計
+        document.getElementById('total-gift-amount').textContent = formatCurrency(totalGiftAmount);
+        document.getElementById('target-gift-amount').textContent = formatCurrency(targetAmount);
+        document.getElementById('gift-progress-fill').style.width = giftProgress + '%';
+        document.getElementById('gift-progress-text').textContent = giftProgress + '%';
+        document.getElementById('gift-achievement-rate').textContent = giftProgress + '%';
+
+        // 喜餅統計
+        document.getElementById('total-cake-count').textContent = totalCakes;
+        document.getElementById('given-cake-count').textContent = givenCakes;
+        document.getElementById('remaining-cake-count').textContent = remainingCakes;
+        document.getElementById('cake-progress-fill').style.width = cakeProgress + '%';
+        document.getElementById('cake-progress-text').textContent = cakeProgress + '%';
+        document.getElementById('cake-distribution-rate').textContent = cakeProgress + '%';
+
+        // 隱藏載入中，顯示統計
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('stats-container').classList.remove('hidden');
+    }
+
+    // 顯示錯誤
+    function showError(message) {
+        document.getElementById('loading').innerHTML = `
+            <span class="material-symbols-outlined text-4xl text-red-500">error</span>
+            <div class="mt-4 text-red-500">${message}</div>
+            <button onclick="location.reload()" class="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                重新載入
+            </button>
+        `;
+    }
+
+    // 頁面載入時執行
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🏦 古靈閣金庫頁面載入');
+        console.log('🎯 目標金額:', TARGET_GIFT_AMOUNT);
+        loadGuestData();
+    });
+</script>
+
+</body>
+</html>
