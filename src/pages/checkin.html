@@ -251,7 +251,14 @@
 </div>
 <script>
     // Google Apps Script URL 從配置文件載入
-    const GOOGLE_SCRIPT_URL = window.CONFIG?.GOOGLE_SCRIPT_URL || alert('請先設定 config.js 配置文件！');
+    let GOOGLE_SCRIPT_URL = window.CONFIG?.GOOGLE_SCRIPT_URL || alert('請先設定 config.js 配置文件！');
+
+    // 🎯 Linus: 修復 Google 多帳號登入導致的 /u/X/ 路徑問題
+    if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL.includes('/macros/u/')) {
+        console.warn('⚠️ 偵測到 Google 多帳號 URL (會導致 404):', GOOGLE_SCRIPT_URL);
+        GOOGLE_SCRIPT_URL = GOOGLE_SCRIPT_URL.replace(/\/macros\/u\/\d+\/s\//g, '/macros/s/');
+        console.log('✅ 已修正為正確 URL:', GOOGLE_SCRIPT_URL);
+    }
 
     function goBackToGuestList() {
         // 返回賓客清單，guestlist.html 會自動使用雙軌策略

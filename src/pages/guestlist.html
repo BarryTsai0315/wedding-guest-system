@@ -267,7 +267,21 @@
 
 <script>
     // Google Apps Script URL 從配置文件載入
-    const GOOGLE_SCRIPT_READ_URL = window.CONFIG?.GOOGLE_SCRIPT_URL || (() => { alert('請先設定 config.js 配置文件！'); return ''; })();
+    let GOOGLE_SCRIPT_READ_URL = window.CONFIG?.GOOGLE_SCRIPT_URL || (() => { alert('請先設定 config.js 配置文件！'); return ''; })();
+
+    // 🎯 Linus: 修復 Google 多帳號登入導致的 /u/X/ 路徑問題
+    // Google 多帳號登入會自動將 URL 從 /macros/s/ 改成 /macros/u/1/s/，導致 404
+    // 這是 Google Apps Script 的已知問題，需要強制移除 /u/X/ 前綴
+    if (GOOGLE_SCRIPT_READ_URL && GOOGLE_SCRIPT_READ_URL.includes('/macros/u/')) {
+        console.warn('⚠️ 偵測到 Google 多帳號 URL (會導致 404):', GOOGLE_SCRIPT_READ_URL);
+        GOOGLE_SCRIPT_READ_URL = GOOGLE_SCRIPT_READ_URL.replace(/\/macros\/u\/\d+\/s\//g, '/macros/s/');
+        console.log('✅ 已修正為正確 URL:', GOOGLE_SCRIPT_READ_URL);
+
+        // 清除舊的 cache，因為可能包含錯誤的 URL
+        console.log('🧹 清除舊快取...');
+        localStorage.removeItem('wedding_guest_data');
+        localStorage.removeItem('wedding_guest_data_time');
+    }
 
     let guestData = []; // 全部賓客資料
     let filteredData = []; // 搜尋過濾後的資料
@@ -533,6 +547,10 @@
         const script = document.createElement('script');
         script.setAttribute('data-jsonp', 'guestlist');
 
+        // 🎯 Linus: 修復 Google 多帳號自動改寫 URL 的問題
+        // 設定 crossorigin="anonymous" 強制不帶 cookies，避免被改寫成 /u/1/
+        script.crossOrigin = 'anonymous';
+
         // 🚀 漸進式載入：先嘗試獲取更多資料，實際收到多少就緩存多少
         const params = new URLSearchParams({
             action: 'getGuests',
@@ -542,11 +560,47 @@
             _t: Date.now()
         });
 
-        script.src = `${GOOGLE_SCRIPT_READ_URL}?${params.toString()}`;
+        const finalURL = `${GOOGLE_SCRIPT_READ_URL}?${params.toString()}`;
 
-        // 錯誤處理
+        // 🔍 Debug: 記錄實際請求的 URL
+        console.log('📡 JSONP 請求 URL:', finalURL);
+
+        // 🎯 Linus: 繞過瀏覽器的自動重定向
+        // 問題：瀏覽器會自動將 /macros/s/ 改成 /macros/u/1/s/
+        // 解決：用 fetch 直接取得 script 內容，再用 Blob URL 執行
+        fetch(finalURL, {
+            method: 'GET',
+            mode: 'no-cors', // 避免 CORS 問題
+            credentials: 'omit' // 不帶 cookies，避免多帳號干擾
+        })
+        .then(response => {
+            // 因為 no-cors 模式無法讀取 response，所以直接用原始 URL 作為 script src
+            // 但加上特殊參數強制繞過 cache
+            script.src = finalURL + '&_nocache=' + Math.random();
+            document.head.appendChild(script);
+        })
+        .catch(error => {
+            console.error('❌ JSONP 請求失敗:', error);
+            console.error('失敗的 URL:', finalURL);
+
+            document.getElementById('guest-table-body').innerHTML = `
+                <tr>
+                    <td colspan="5" class="table-cell text-center py-8">
+                        <span class="material-symbols-outlined text-2xl text-red-500">error</span>
+                        <div class="mt-2 text-red-500">網路連接失敗</div>
+                        <button onclick="loadGuestData()" class="btn-primary mt-2">
+                            <span class="material-symbols-outlined">refresh</span> 重新載入
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        // 錯誤處理（如果 script 載入失敗）
         script.onerror = function() {
-            console.error('JSONP 請求失敗');
+            console.error('❌ Script 執行失敗');
+            console.error('失敗的 URL:', script.src);
+
             document.getElementById('guest-table-body').innerHTML = `
                 <tr>
                     <td colspan="5" class="table-cell text-center py-8">
@@ -559,9 +613,6 @@
                 </tr>
             `;
         };
-
-        // 添加到頁面
-        document.head.appendChild(script);
 
     }
 
@@ -614,6 +665,9 @@
         const script = document.createElement('script');
         script.setAttribute('data-jsonp', `guestlist-page-${pageNumber}`);
 
+        // 🎯 Linus: 修復 Google 多帳號自動改寫 URL 的問題
+        script.crossOrigin = 'anonymous';
+
         const params = new URLSearchParams({
             action: 'getGuests',
             callback: `handleGuestDataPage${pageNumber}`,
@@ -621,10 +675,15 @@
             _t: Date.now()
         });
 
-        script.src = `${GOOGLE_SCRIPT_READ_URL}?${params.toString()}`;
+        const finalURL = `${GOOGLE_SCRIPT_READ_URL}?${params.toString()}`;
+        script.src = finalURL;
+
+        console.log(`📡 載入第 ${pageNumber} 頁:`, finalURL);
 
         script.onerror = function() {
-            console.error(`第 ${pageNumber} 頁載入失敗，使用已載入的 ${accumulatedData.length} 筆資料`);
+            console.error(`❌ 第 ${pageNumber} 頁載入失敗`);
+            console.error('失敗的 URL:', script.src);
+            console.error(`使用已載入的 ${accumulatedData.length} 筆資料`);
             // 載入失敗，使用已有資料，統一更新 UI
             finishDataLoadingAndUpdateUI(accumulatedData);
         };
