@@ -105,7 +105,7 @@
 <div class="flex flex-1 justify-end gap-6">
 <nav class="flex items-center gap-8">
 <a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="../../index.html">Home</a>
-<a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="guestlist.html">Guests</a>
+<a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="javascript:void(0);" onclick="goBackToGuestList()">Guests</a>
 <a class="text-sm font-medium text-[var(--primary-color)] font-semibold" href="#">Check In</a>
 <a class="text-sm font-medium text-[var(--text-color)] hover:text-[var(--primary-color)] transition-colors" href="#">Gifts</a>
 </nav>
@@ -175,7 +175,7 @@
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-end">
 <div class="transition-opacity" id="red-envelope-section">
 <label class="block text-sm font-medium leading-6 text-[var(--text-color)]" for="red-envelope-no">紅包編號</label>
-<input class="form-input mt-2" disabled="" id="red-envelope-no" name="red-envelope-no" placeholder="例如：A-12" type="text"/>
+<input class="form-input mt-2" disabled="" id="red-envelope-no" name="red-envelope-no" placeholder="例如：001~999" type="text"/>
 </div>
 <div id="gift-amount-section" class="transition-opacity">
 <label class="block text-sm font-medium leading-6 text-[var(--text-color)]" for="gift-amount">禮金金額</label>
@@ -254,6 +254,7 @@
     const GOOGLE_SCRIPT_URL = window.CONFIG?.GOOGLE_SCRIPT_URL || alert('請先設定 config.js 配置文件！');
 
     function goBackToGuestList() {
+        // 返回賓客清單，guestlist.html 會自動使用雙軌策略
         window.location.href = 'guestlist.html';
     }
 

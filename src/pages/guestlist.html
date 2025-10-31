@@ -173,6 +173,26 @@
 <h2 class="text-3xl font-bold text-[var(--hp-brown)] tracking-tight text-center">賓客名冊</h2>
 </div>
 <div class="magic-table rounded-2xl overflow-hidden">
+<!-- 報到進度條 -->
+<div class="p-6 border-b border-[var(--subtle-border)] bg-gradient-to-r from-blue-50 to-purple-50">
+<div class="max-w-4xl mx-auto">
+<div class="flex items-center justify-between mb-2">
+<h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">checklist</span>
+報到進度
+</h3>
+<div id="progress-stats" class="text-sm font-bold text-gray-800">
+<span id="checked-in-count">0</span> / <span id="total-count">0</span> 人
+<span class="text-xs text-gray-600 ml-2">(<span id="progress-percentage">0</span>%)</span>
+</div>
+</div>
+<!-- 進度條 -->
+<div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
+<div id="progress-bar" class="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full transition-all duration-500 ease-out shadow-sm" style="width: 0%"></div>
+</div>
+</div>
+</div>
+
 <!-- 搜尋欄位 -->
 <div class="p-6 border-b border-[var(--subtle-border)]">
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-center gap-4">
@@ -354,7 +374,7 @@
         };
     };
 
-    // 🚀 性能優化：智能載入資料
+    // 🚀 性能優化：智能載入資料（雙軌策略）
     function smartLoadGuestData(forceReload = false) {
         // 優先嘗試從 localStorage 恢復緩存
         if (!forceReload && guestData.length === 0) {
@@ -362,13 +382,25 @@
         }
 
         // 檢查記憶體緩存是否有效
-        if (!forceReload && guestData.length > 0 &&
-            Date.now() - lastDataUpdateTime < CACHE_DURATION) {
+        const cacheIsValid = !forceReload && guestData.length > 0 &&
+            Date.now() - lastDataUpdateTime < CACHE_DURATION;
+
+        if (cacheIsValid) {
+            // 🎯 雙軌策略：先用 cache 快速顯示
+            console.log('📦 使用快取快速顯示，背景同步最新資料...');
             filteredData = [...guestData];
+            updateProgressBar(); // 更新進度條
             renderGuestTable();
+
+            // 背景偷偷重新載入完整資料
+            setTimeout(() => {
+                console.log('🔄 背景重新載入完整資料...');
+                loadGuestData();
+            }, 100);
             return;
         }
 
+        // Cache 無效或強制重載，直接載入
         loadGuestData();
     }
 
@@ -436,13 +468,23 @@
         return count;
     }
 
+    // 🧹 徹底清理所有 JSONP 殘留
+    function cleanupAllJSONP() {
+        // 清理所有 JSONP script 標籤
+        document.querySelectorAll('script[data-jsonp]').forEach(script => script.remove());
+
+        // 清理所有相關的全域 callback
+        Object.keys(window).forEach(key => {
+            if (key.startsWith('handleGuestData')) {
+                delete window[key];
+            }
+        });
+    }
+
     // 載入全部賓客資料 - 使用 JSONP
     function loadGuestData() {
-        // 清理之前的 JSONP script 標籤
-        const oldScript = document.querySelector('script[data-jsonp="guestlist"]');
-        if (oldScript) {
-            oldScript.remove();
-        }
+        // 🎯 Linus: 徹底清理，不留任何殘留
+        cleanupAllJSONP();
 
         // 設定全域回調函數
         window.handleGuestData = function(response) {
@@ -537,7 +579,7 @@
         if (currentSearchTerm) {
             filterGuests(currentSearchTerm);
         } else {
-            // 更新分頁顯示
+            // 更新分頁顯示和進度條
             updatePaginationDisplay();
             renderGuestTable();
         }
@@ -590,10 +632,24 @@
         document.head.appendChild(script);
     }
 
+    // 🎯 更新報到進度條
+    function updateProgressBar() {
+        const totalCount = guestData.length;
+        const checkedInCount = guestData.filter(guest => guest.checkedIn || guest.timestamp).length;
+        const percentage = totalCount > 0 ? Math.round((checkedInCount / totalCount) * 100) : 0;
+
+        // 更新 DOM 元素
+        document.getElementById('checked-in-count').textContent = checkedInCount;
+        document.getElementById('total-count').textContent = totalCount;
+        document.getElementById('progress-percentage').textContent = percentage;
+        document.getElementById('progress-bar').style.width = `${percentage}%`;
+    }
+
     // 更新分頁顯示（基於本地資料）
     function updatePaginationDisplay() {
         updatePaginationInfo();
         updatePaginationButtons();
+        updateProgressBar(); // 同時更新進度條
     }
 
     // 更新分頁資訊顯示
@@ -966,33 +1022,34 @@ ${guest.collectMoney && guest.redEnvelopeNo ? `紅包編號: ${guest.redEnvelope
                 remarks: remarksParam ? decodeURIComponent(remarksParam) : ''
             };
 
-            // ✅ 檢查是否有現有緩存資料（包括 localStorage）
+            // 🎯 Linus: 雙軌策略 - cache 快速顯示 + 背景強制重載
+            // 1. 先嘗試從 cache 快速顯示
             if (guestData.length === 0) {
-                loadCacheFromStorage(); // 嘗試從 localStorage 恢復
+                loadCacheFromStorage();
             }
 
             if (guestData.length > 0) {
-
-                // 直接使用緩存進行本地更新
+                console.log('📦 使用快取快速顯示，背景同步最新資料...');
                 const guest = guestData.find(g => g.serialNumber === parseInt(checkInData.serialNumber));
                 if (guest) {
                     checkInData.familyId = guest.familyId;
                     updateLocalGuestData(checkInData);
-                } else {
-                    loadGuestData();
                 }
-            } else {
 
-                // 載入資料後執行本地更新
+                // 2. 背景強制重載完整資料
+                setTimeout(() => {
+                    console.log('🔄 背景重新載入完整資料...');
+                    loadGuestData();
+                }, 100);
+            } else {
+                // 沒有 cache，直接載入
+                console.log('🔄 無快取，直接載入完整資料...');
                 const originalCallback = window.handleGuestData;
 
                 window.handleGuestData = function(response) {
-                    // 執行原始的資料載入邏輯
                     originalCallback(response);
 
-                    // 如果資料載入成功，執行本地更新
                     if (guestData.length > 0) {
-                        // 找到家庭ID來正確更新
                         const guest = guestData.find(g => g.serialNumber === parseInt(checkInData.serialNumber));
                         if (guest) {
                             checkInData.familyId = guest.familyId;
@@ -1000,7 +1057,6 @@ ${guest.collectMoney && guest.redEnvelopeNo ? `紅包編號: ${guest.redEnvelope
                         }
                     }
 
-                    // 恢復原始回調
                     window.handleGuestData = originalCallback;
                 };
 
@@ -1011,6 +1067,7 @@ ${guest.collectMoney && guest.redEnvelopeNo ? `紅包編號: ${guest.redEnvelope
             window.history.replaceState({}, document.title, window.location.pathname);
         } else if (urlParams.has('refresh')) {
             // 舊版本相容性：強制刷新
+            console.log('🔄 強制刷新模式');
             loadGuestData();
             window.history.replaceState({}, document.title, window.location.pathname);
         } else {
