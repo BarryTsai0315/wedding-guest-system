@@ -129,13 +129,13 @@
 <div>
 <label class="block text-sm font-medium leading-6 text-[var(--text-color)]" for="serial-number">序號</label>
 <div class="mt-2">
-<input class="form-input w-full" id="serial-number" name="serial-number" placeholder="e.g., 934" type="text"/>
+<input class="form-input w-full" id="serial-number" name="serial-number" placeholder="e.g., 934" type="text" readonly/>
 </div>
 </div>
 <div>
 <label class="block text-sm font-medium leading-6 text-[var(--text-color)]" for="guest-name">>賓客姓名</label>
 <div class="mt-2">
-<input class="form-input w-full" id="guest-name" name="guest-name" placeholder="e.g., Luna Lovegood" type="text"/>
+<input class="form-input w-full" id="guest-name" name="guest-name" placeholder="e.g., Luna Lovegood" type="text" readonly/>
 </div>
 </div>
 </div>
@@ -386,6 +386,33 @@
         // 表單提交處理
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
+
+            // === 驗證邏輯 ===
+            const errors = [];
+            let firstErrorElement = null;
+
+            // 1. 檢查收禮金邏輯：若勾選收禮金，必須填寫紅包編號
+            const collectMoneyCheckbox = document.getElementById('collect-money');
+            const redEnvelopeInput = document.getElementById('red-envelope-no');
+            if (collectMoneyCheckbox.checked && !redEnvelopeInput.value.trim()) {
+                errors.push('已勾選「收取禮金」，請填寫紅包編號');
+                if (!firstErrorElement) firstErrorElement = redEnvelopeInput;
+            }
+
+            // 2. 檢查喜餅發放邏輯：若選擇有喜餅，必須勾選喜餅已發放
+            const hasCakeRadioYes = document.getElementById('has-cake-yes');
+            const cakeGivenCheckbox = document.getElementById('cake-given');
+            if (hasCakeRadioYes.checked && !cakeGivenCheckbox.checked) {
+                errors.push('已選擇「有喜餅」，請勾選「喜餅已發放」');
+                if (!firstErrorElement) firstErrorElement = cakeGivenCheckbox;
+            }
+
+            // 如果有錯誤，一次性顯示所有錯誤訊息
+            if (errors.length > 0) {
+                alert('⚠️ 請修正以下問題：\n\n' + errors.map((err, idx) => `${idx + 1}. ${err}`).join('\n'));
+                if (firstErrorElement) firstErrorElement.focus();
+                return;
+            }
 
             const button = form.querySelector('button[type="submit"]');
             const originalText = button.innerHTML;
