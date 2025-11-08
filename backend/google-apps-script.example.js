@@ -43,6 +43,36 @@ function createJSONPResponse(data, callback) {
 }
 
 // ===== 讀取相關函數 =====
+function getNextRedEnvelopeNo(spreadsheetId, sheetName) {
+  try {
+    const sheet = SpreadsheetApp.openById(spreadsheetId).getSheetByName(sheetName);
+    if (!sheet) return { success: false, error: 'guestList 工作表不存在' };
+
+    const allData = sheet.getDataRange().getValues();
+    let maxNumber = 0;
+
+    // 從第2行開始掃描（第1行是標題）
+    for (let i = 1; i < allData.length; i++) {
+      const redEnvelopeNo = allData[i][5]; // F欄：紅包編號（索引5）
+      if (redEnvelopeNo) {
+        // 將紅包編號轉成數字
+        const num = parseInt(redEnvelopeNo.toString(), 10);
+        if (!isNaN(num) && num > maxNumber) {
+          maxNumber = num;
+        }
+      }
+    }
+
+    // 返回最大值 +1，如果沒有任何紅包編號則從 1 開始
+    const nextNumber = maxNumber + 1;
+    return { success: true, nextRedEnvelopeNo: nextNumber };
+
+  } catch (e) {
+    console.log('getNextRedEnvelopeNo error:', e.toString());
+    return { success: false, error: e.toString() };
+  }
+}
+
 function getGuestList(spreadsheetId, sheetName, params) {
   const sheet = SpreadsheetApp.openById(spreadsheetId).getSheetByName(sheetName);
   const page = parseInt((params && params.page) || 1, 10) || 1;
@@ -212,6 +242,10 @@ function doGet(e) {
       case 'getFamilyInfo': {
         const guestName = e.parameter.guestName || '';
         const result = getFamilyInfoByName(SPREADSHEET_ID, GUEST_SHEET_NAME, FAMILY_SHEET_NAME, guestName);
+        return createJSONPResponse(result, callback);
+      }
+      case 'getNextRedEnvelopeNo': {
+        const result = getNextRedEnvelopeNo(SPREADSHEET_ID, GUEST_SHEET_NAME);
         return createJSONPResponse(result, callback);
       }
       default:

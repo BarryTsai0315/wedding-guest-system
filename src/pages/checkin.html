@@ -354,6 +354,11 @@
                 redEnvelopeInput.disabled = false;
                 giftAmountSection.classList.remove('opacity-50');
                 redEnvelopeSection.classList.remove('opacity-50');
+
+                // 如果紅包編號欄位是空的，自動抓取下一個編號
+                if (!redEnvelopeInput.value.trim()) {
+                    fetchNextRedEnvelopeNo();
+                }
             } else {
                 giftAmountInput.disabled = true;
                 giftAmountInput.value = '';
@@ -510,7 +515,76 @@
         // Initial state
         toggleGiftAmount();
         toggleCakeGiven();
+
+        // 如果頁面載入時 collect-money 已經是 checked 狀態，且紅包編號為空，則自動抓取
+        if (collectMoneyCheckbox.checked && !redEnvelopeInput.value.trim()) {
+            fetchNextRedEnvelopeNo();
+        }
     });
+
+    // 抓取下一個紅包編號 (使用JSONP)
+    function fetchNextRedEnvelopeNo() {
+        const redEnvelopeInput = document.getElementById('red-envelope-no');
+
+        // 使用隨機 callback 名稱徹底破壞快取
+        const randomId = Math.random().toString(36).substr(2, 9);
+        const callbackName = 'handleNextRedEnvelopeNo_' + randomId;
+
+        // 清理之前的 JSONP script 標籤和舊的回調函數
+        const oldScripts = document.querySelectorAll('script[data-jsonp="next-red-envelope"]');
+        oldScripts.forEach(s => s.remove());
+
+        // 設定全域回調函數（使用隨機名稱）
+        window[callbackName] = function(response) {
+            console.log('紅包編號 JSONP 回應:', response);
+
+            if (response.success && response.nextRedEnvelopeNo) {
+                redEnvelopeInput.value = response.nextRedEnvelopeNo;
+                console.log('✅ 自動填入建議紅包編號:', response.nextRedEnvelopeNo);
+            } else {
+                console.log('⚠️ 無法取得紅包編號:', response.error || '未知錯誤');
+            }
+
+            // 清理：移除 script 標籤和回調函數
+            setTimeout(() => {
+                delete window[callbackName];
+                const script = document.querySelector(`script[data-jsonp="next-red-envelope"][data-callback="${callbackName}"]`);
+                if (script) script.remove();
+            }, 1000);
+        };
+
+        // 創建 JSONP script 標籤
+        const script = document.createElement('script');
+        script.setAttribute('data-jsonp', 'next-red-envelope');
+        script.setAttribute('data-callback', callbackName);
+
+        const params = new URLSearchParams({
+            action: 'getNextRedEnvelopeNo',
+            callback: callbackName,  // 使用隨機 callback 名稱
+            _t: Date.now(),
+            _r: randomId  // 額外的隨機參數
+        });
+
+        script.src = `${GOOGLE_SCRIPT_URL}?${params.toString()}`;
+
+        // 錯誤處理
+        script.onerror = function() {
+            console.log('❌ JSONP 紅包編號查詢失敗');
+            console.log('🔍 請檢查：');
+            console.log('   1. Google Apps Script 是否已部署最新版本');
+            console.log('   2. URL 是否正確:', GOOGLE_SCRIPT_URL);
+            console.log('   3. Apps Script 是否包含 getNextRedEnvelopeNo endpoint');
+
+            // 清理失敗的回調
+            delete window[callbackName];
+        };
+
+        // 添加到頁面
+        document.head.appendChild(script);
+
+        console.log('📡 發送紅包編號 JSONP 請求:', script.src);
+        console.log('🔧 使用隨機 callback:', callbackName);
+    }
 
     // 簡單查詢家庭成員並在check-in按鈕上方顯示 (使用JSONP)
     function loadFamilyMembersSimple(guestName) {
