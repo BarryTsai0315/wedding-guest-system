@@ -691,6 +691,18 @@
         document.head.appendChild(script);
     }
 
+    // 🎯 Linus: 消除字符串轉義的複雜性 - 純函數，職責單一
+    function escapeJsString(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/\\/g, '\\\\')   // 反斜線必須最先處理
+            .replace(/'/g, "\\'")     // 單引號
+            .replace(/"/g, '\\"')     // 雙引號
+            .replace(/\n/g, '\\n')    // 換行符
+            .replace(/\r/g, '\\r')    // 回車符
+            .replace(/\t/g, '\\t');   // Tab 符
+    }
+
     // 🎯 更新報到進度條
     function updateProgressBar() {
         const totalCount = guestData.length;
@@ -803,7 +815,7 @@
             const rowClass = isCheckedIn ? 'checked-in-row' : 'unchecked-row';
             const buttonClass = isCheckedIn ? 'btn-hogwarts bg-green-200 text-green-800 hover:bg-green-300' : 'btn-hogwarts';
             const buttonText = isCheckedIn ? '<span class="material-symbols-outlined magic-sparkle">edit</span> 已報到' : '<span class="material-symbols-outlined magic-sparkle">login</span> 未報到';
-            const buttonAction = `goToCheckin('${guest.serialNumber}', '${guest.guestName}', ${guest.collectMoney}, ${guest.hasCake})`;
+            const buttonAction = `goToCheckin('${guest.serialNumber}', '${escapeJsString(guest.guestName)}', ${guest.collectMoney}, ${guest.hasCake})`;
 
             // 添加家庭群組樣式
             const familyGroupClass = guest.familyGroupClass || '';
